@@ -88,14 +88,18 @@ h2 .dem{background:var(--vien);color:var(--mo);border-radius:99px;padding:0 8px;
 .fab{position:fixed;right:16px;bottom:16px;z-index:20;background:var(--nhan);color:#fff;border:0;border-radius:99px;padding:14px 20px;font-size:15px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
 .lop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center}
 @media(min-width:620px){.lop{align-items:center}}
-.hop{background:var(--nen);border-radius:18px 18px 0 0;padding:18px 16px 26px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.hop{background:var(--nen);border-radius:18px 18px 0 0;padding:0 16px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
 @media(min-width:620px){.hop{border-radius:18px}}
-.hop h3{margin:0 0 12px;font-size:17px}
+.hop h3{margin:0;font-size:17px;flex:1;min-width:0}
+/* 04/10: đầu hộp dính trên cùng (tiêu đề + nút ✕), hàng nút dính dưới cùng — không phải kéo mới thấy nút */
+.dauhop{position:sticky;top:0;z-index:3;background:var(--nen);display:flex;align-items:center;gap:10px;margin:0 -16px 10px;padding:14px 12px 10px 16px;border-bottom:1px solid var(--vien)}
+.xhop{flex:none;width:40px;height:40px;border-radius:99px;border:1px solid var(--vien);background:var(--the);color:var(--chu);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 label{display:block;font-size:12.5px;color:var(--mo);margin:12px 0 5px}
 input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--vien);border-radius:10px;background:var(--the);color:var(--chu);font:15px inherit;font-family:inherit}
 textarea{min-height:66px;resize:vertical}
 .doi{display:flex;gap:8px}.doi>*{flex:1}
 .cuoi{display:flex;gap:8px;margin-top:18px}
+.hop>.cuoi{position:sticky;bottom:0;z-index:3;background:var(--nen);margin:18px -16px 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--vien)}
 .cuoi button{flex:1;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--vien);background:var(--the);color:var(--chu)}
 .cuoi button.chinh{background:var(--nhan);color:#fff;border-color:transparent}
 .bao{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:60;background:#232323;color:#fff;padding:11px 18px;border-radius:99px;font-size:14px;max-width:90%;text-align:center}
@@ -336,10 +340,10 @@ function chay(ten,ts,xong){if(DANG_CU){bao('Đang lấy dữ liệu mới nhất
     .withFailureHandler(function(e){dongKhoa();bao((e&&e.message)||'Lỗi',1);});
   r[ten].apply(r,ts);}
 function hop(tieuDe,than,nutOK,khiOK){
-  var h='<div class="lop" id="lop"><div class="hop"><h3>'+tieuDe+'</h3>'+than+
+  var h='<div class="lop" id="lop"><div class="hop"><div class="dauhop"><h3>'+tieuDe+'</h3><button class="xhop" id="xhop" aria-label="Đóng" title="Đóng">✕</button></div>'+than+
     '<div class="cuoi"><button id="huyhop">Đóng</button>'+(nutOK?'<button class="chinh" id="okhop">'+nutOK+'</button>':'')+'</div></div></div>';
   document.getElementById('hopthoai').innerHTML=h;
-  document.getElementById('huyhop').onclick=dongHop;
+  document.getElementById('huyhop').onclick=dongHop;document.getElementById('xhop').onclick=dongHop;
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 
@@ -436,6 +440,7 @@ function hopChiTiet(ma){var d=(SX&&SX.ds||[]).filter(function(x){return x.ma===m
   hop('📋 '+esc(d.maChung||d.ma)+(d.maChung?' <small style="color:var(--mo);font-weight:400">'+esc(d.ma)+'</small>':''),x,'',null);gan();napAnhTG();}
 // 02/10: PHIÊN BẢN hiện dưới tên xưởng — MỖI LẦN TRIỂN KHAI thêm 1 dòng lên ĐẦU (số = số phiên bản Apps Script sẽ tạo)
 var PHIEN_BAN=[
+  ['66','04/10/2026','✕ Nút đóng ở góc trên mọi hộp · nút Đóng / Lưu luôn nằm dưới cùng, không phải kéo xuống'],
   ['65','04/10/2026','🖼 Ảnh hiện nhanh hơn (máy chủ ảnh Google) — ảnh cũ chỉ có trên Telegram đưa hết lên Drive'],
   ['64','03/10/2026','⚡ Bảng mở từ trang GitHub (nhanh hơn, hiện ngay dữ liệu lần trước) — link bot đổi sang trang mới'],
   ['63','03/10/2026','🔍 Ô tra mã đơn ở đầu trang — gõ mã, bấm là mở chi tiết đơn'],
