@@ -440,6 +440,7 @@ function hopChiTiet(ma){var d=(SX&&SX.ds||[]).filter(function(x){return x.ma===m
   hop('📋 '+esc(d.maChung||d.ma)+(d.maChung?' <small style="color:var(--mo);font-weight:400">'+esc(d.ma)+'</small>':''),x,'',null);gan();napAnhTG();}
 // 02/10: PHIÊN BẢN hiện dưới tên xưởng — MỖI LẦN TRIỂN KHAI thêm 1 dòng lên ĐẦU (số = số phiên bản Apps Script sẽ tạo)
 var PHIEN_BAN=[
+  ['69','04/10/2026','📄 Đối soát: tick được đơn ở mọi trạng thái (đơn chưa gửi xe mà đối tác đã trả) · ↩ đưa về chưa đối soát nếu đối tác không duyệt'],
   ['68','04/10/2026','🔧 Sửa nút + Chi ở tab Thu chi không mở trên trang GitHub'],
   ['67','04/10/2026','👷 Thu chi: chọn danh mục Nhân sự → ghi tạm ứng / thanh toán cho từng người · đính ảnh chuyển khoản, thợ nhận kèm ảnh'],
   ['66','04/10/2026','✕ Nút đóng ở góc trên mọi hộp · nút Đóng / Lưu luôn nằm dưới cùng, không phải kéo xuống'],
@@ -889,31 +890,34 @@ function hopChiPhi(ma){var s=SX;var d=s.ds.filter(function(x){return x.ma===ma;}
   document.getElementById('fpsthem').onclick=function(){var t=document.getElementById('fpsten').value.trim(),g=Number(document.getElementById('fpsgia').value)||0;if(!t||!g)return bao('Nhập nội dung và số tiền',1);chay('webThemChiPhi',[KHOA,ma,'Phát sinh','',t,1,g,''],function(){bao('Đã thêm phát sinh');lai();});};
   q('[data-xoacp]').forEach(function(b){b.onclick=function(){if(!confirm('Bỏ dòng này?'))return;chay('webXoaChiPhi',[KHOA,b.getAttribute('data-xoacp')],function(){bao('Đã bỏ');lai();});};});}
 function veDS(){var ds=DL.doiSoat;var o=[];if(!ds)return '<div class="trong">Chưa có dữ liệu đối soát.</div>';
-  var tatCa=ds.ds.filter(function(d){return d.daGiao||d.dangDongKien;});
+  // 04/10: hiện mọi đơn (trừ Huỷ chưa đối soát) để tick được đơn chưa gửi xe; ô số tiền phía trên vẫn chỉ tính đơn đã đóng kiện / gửi xe / đã đối soát
+  var tatCa=ds.ds.filter(function(d){return d.cd!=='Huỷ'||d.doiSoat;});
   var thangs={};tatCa.forEach(function(d){var k=d.thangGiao||'chưa giao';thangs[k]=(thangs[k]||0)+1;});
   var keys=Object.keys(thangs).sort(function(a,b){return khoaThang(b)>khoaThang(a)?1:-1;});
   var loc=tatCa.filter(function(d){return (!locDS||(d.thangGiao||'chưa giao')===locDS)&&(!chiChuaTra||d.conLai>0);});
-  var T=function(f){return loc.reduce(function(a,d){return a+(d[f]||0);},0);};
-  o.push('<h2>Đối soát với '+esc(ds.tenDoiTac)+'</h2><div class="luoi luoi3">'+oSo(loc.length,'Sản phẩm','tien')+oSo(gon(T('tong')),'Đối tác phải trả','tien')+oSo(gon(T('conLai')),'Còn lại chưa thu','tien'+(T('conLai')>0?' sap':''))+'</div>');
+  var locT=loc.filter(function(d){return d.daGiao||d.dangDongKien||d.doiSoat;});
+  var T=function(f){return locT.reduce(function(a,d){return a+(d[f]||0);},0);};
+  var TA=function(f){return loc.reduce(function(a,d){return a+(d[f]||0);},0);};
+  o.push('<h2>Đối soát với '+esc(ds.tenDoiTac)+'</h2><div class="luoi luoi3">'+oSo(locT.length,'Sản phẩm','tien')+oSo(gon(T('tong')),'Đối tác phải trả','tien')+oSo(gon(T('conLai')),'Còn lại chưa thu','tien'+(T('conLai')>0?' sap':''))+'</div>');
   o.push('<div class="meta" style="margin-top:8px"><span>Giá thành '+tien(T('giaThanh'))+'</span><span>Kiện '+T('soKien')+' · '+tien(T('tienKien'))+'</span><span>Phụ kiện '+tien(T('phuKien'))+'</span><span>Phát sinh '+tien(T('phatSinh'))+'</span><span>Đã trả '+tien(T('daTra'))+'</span></div>');
   o.push('<div style="margin-top:10px"><span class="chip'+(!locDS?' chon':'')+'" data-locds="">Tất cả ('+tatCa.length+')</span>');keys.forEach(function(k){o.push('<span class="chip'+(locDS===k?' chon':'')+'" data-locds="'+esc(k)+'">'+esc(k)+' ('+thangs[k]+')</span>');});
   o.push('<span class="chip'+(chiChuaTra?' chon':'')+'" id="chuatra">Chỉ chưa trả</span></div>');
   o.push('<div class="viec" style="margin:10px 0"><button class="nn" id="caidatkien">📦 Đơn giá kiện: '+tien(ds.donGiaKien)+'</button><button class="nn" id="bangpk">🔩 Bảng giá phụ kiện ('+(ds.phuKien||[]).length+')</button></div>');
   // thanh chọn đơn để gửi đối tác
   var xong=loc.filter(function(d){return d.daGiao&&!d.doiSoat;});
-  var dsChon=tatCa.filter(function(d){return CHON_DS[d.ma]&&d.daGiao;});
+  var dsChon=tatCa.filter(function(d){return CHON_DS[d.ma];});
   var ngoai=dsChon.filter(function(d){return loc.indexOf(d)<0;}).length;
   var Tc=function(f){return dsChon.reduce(function(a,d){return a+(d[f]||0);},0);};
   o.push('<div class="thanhchon"><div>'+(dsChon.length
       ? '<b>Đã chọn '+dsChon.length+' đơn</b> · tổng '+gon(Tc('tong'))+' · còn lại '+gon(Tc('conLai'))+(ngoai?'<br><span style="font-size:12px;opacity:.85">'+ngoai+' đơn nằm ngoài bộ lọc đang xem</span>':'')
-      : '<b>Chọn đơn để gửi đối tác</b><br><span style="font-size:12px;opacity:.85">Tick ô vuông ở khối ✅ Hoàn thành — đơn chưa rời xưởng thì chưa đối soát được</span>')
+      : '<b>Chọn đơn để gửi đối tác</b><br><span style="font-size:12px;opacity:.85">Tick đơn ở bất kỳ khối nào (đơn chưa gửi xe mà đối tác đã trả cũng chọn được). Không tick = mọi đơn chưa đối soát.</span>')
     +'</div><div class="np">'
     +(xong.length?'<button id="chontatca">'+(xong.every(function(d){return CHON_DS[d.ma];})?'Bỏ chọn tất cả':'Chọn tất cả ('+xong.length+' đơn chưa đối soát)')+'</button>':'')
     +(dsChon.length?'<button id="boychon">Bỏ chọn</button>':'')
     +'<button class="chinh" id="xuatbang">📄 Tạo bảng gửi đối tác</button></div></div>');
   var thieuGia=loc.filter(function(d){return !d.giaThanh;}).length;if(thieuGia)o.push('<div class="phu" style="color:var(--do);margin-bottom:8px">⚠️ '+thieuGia+' sản phẩm chưa có giá thành — bấm 💳 trên dòng để nhập.</div>');
   o.push('<div class="o" style="overflow-x:auto;padding:6px"><table class="tk rong"><tr><th></th><th>Mã · khách</th><th>Giao</th><th class="so">Giá thành</th><th class="so">Kiện</th><th class="so">PK</th><th class="so">PS</th><th class="so">Tổng</th><th class="so">Đã trả</th><th class="so">Còn lại</th><th></th></tr>');
-  // gom theo trạng thái đơn — chỉ đơn Hoàn thành mới đối soát với đối tác được
+  // gom theo trạng thái đơn — 04/10: đơn chưa đối soát ở mọi khối đều tick được
   var xepNo=function(a,b){if((a.conLai>0)!==(b.conLai>0))return a.conLai>0?-1:1;return a.ma<b.ma?1:-1;};
   NHOM_DS.forEach(function(g){
     var ds=loc.filter(function(d){return g[1](d);}).sort(xepNo);
@@ -923,15 +927,15 @@ function veDS(){var ds=DL.doiSoat;var o=[];if(!ds)return '<div class="trong">Ch�
     ds.forEach(function(d){o.push(dongDS(d,g[2]));});
     if(g[3])o.push(veDaDoiSoat(loc));
   });
-  o.push('<tr style="font-weight:700"><td></td><td>Tổng</td><td></td><td class="so">'+tien(T('giaThanh'))+'</td><td class="so">'+T('soKien')+'</td><td class="so">'+tien(T('phuKien'))+'</td><td class="so">'+tien(T('phatSinh'))+'</td><td class="so">'+tien(T('tong'))+'</td><td class="so">'+tien(T('daTra'))+'</td><td class="so">'+tien(T('conLai'))+'</td><td></td></tr></table></div>');
+  o.push('<tr style="font-weight:700"><td></td><td>Tổng</td><td></td><td class="so">'+tien(TA('giaThanh'))+'</td><td class="so">'+TA('soKien')+'</td><td class="so">'+tien(TA('phuKien'))+'</td><td class="so">'+tien(TA('phatSinh'))+'</td><td class="so">'+tien(TA('tong'))+'</td><td class="so">'+tien(TA('daTra'))+'</td><td class="so">'+tien(TA('conLai'))+'</td><td></td></tr></table></div>');
   o.push('<div class="phu" style="margin-top:8px">Giá thành lấy từ cột GIÁ trong file đối tác, bạn sửa được ở 💳. "Đã trả" lấy từ cột ĐÃ THANH TOÁN của file đối tác khi bạn chưa nhập. Số kiện nhập lúc bấm "Đã đóng kiện → giao" hoặc trong 💳.</div>');
   return o.join('');}
 function hopXuatBang(){var ds=DL.doiSoat;hop('📄 Xuất bảng thanh toán gửi '+esc(ds.tenDoiTac),'<div class="phu">Tạo một Google Sheet theo mẫu đối tác (thêm cột tiền kiện, phụ kiện, phát sinh, tổng, đã trả, còn lại), lưu vào Drive. Link <b>chỉ gửi riêng cho bạn</b>'+(NHOM_DT?' và nhóm đối tác nếu tick':'')+', không vào nhóm nội bộ.</div><label>Email được phép mở bảng (cách nhau dấu phẩy)</label><input id="fmail" placeholder="email đối tác" value="'+esc(ds.emailDoiTac||'')+'"><div class="phu" style="margin-top:4px">Để trống thì chỉ mình bạn mở được — ai cầm link cũng không xem được.</div><label>Đơn đưa vào bảng</label><div class="meta">'+(maChon().length?'<b>'+maChon().length+' đơn bạn đã tick</b> · tổng '+gon(tongChon('tong'))+' · còn lại '+gon(tongChon('conLai')):(locDS?'Tháng giao <b>'+esc(locDS)+'</b>':'<b>Tất cả</b> đơn Hoàn thành (đã gửi xe)')+(chiChuaTra?' · chỉ đơn còn nợ':'')+' — chưa tick đơn nào nên lấy cả nhóm đang xem')+'</div>'+(maChon().length?'<div class="o" style="max-height:26vh;overflow:auto;margin-top:6px">'+dsChonDoiSoat().map(function(d){return '<div class="lan"><span><b>'+esc(d.maChung||d.ma)+'</b> <small style="color:var(--mo)">'+esc(d.tenKhach).slice(0,20)+'</small></span><span>'+tien(d.conLai)+'</span></div>';}).join('')+'</div>':'')+'<div class="chon2"><label><input type="checkbox" id="fguidt"'+(NHOM_DT?'':' disabled')+'> Gửi link vào nhóm đối tác'+(NHOM_DT?'':' (chưa cài NHOM_DOI_TAC_ID)')+'</label></div>','Xuất bảng',function(){
   moKhoa();google.script.run.withSuccessHandler(function(k){dongKhoa();dongHop();if(k.maBang)CHON_DS={};hopDaXuat(k);tai();}).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webXuatBangThanhToan(KHOA,locDS==='chưa giao'?'':locDS,chiChuaTra,maChon(),document.getElementById('fguidt').checked,document.getElementById('fmail').value.trim());});}
 var NHOM_DS=[
   ['✅ <b>Hoàn thành — chưa đối soát</b>',function(d){return d.daGiao&&!d.doiSoat;},1,1],
-  ['📦 <b>Đóng kiện — chưa gửi xe</b>',function(d){return d.cd==='Đóng kiện';},0],
-  ['▪ <b>Đang trong xưởng</b>',function(d){return !d.daGiao&&d.cd!=='Đóng kiện';},0]
+  ['📦 <b>Đóng kiện — chưa gửi xe</b>',function(d){return d.cd==='Đóng kiện'&&!d.doiSoat;},1],
+  ['▪ <b>Đang trong xưởng</b>',function(d){return !d.daGiao&&d.cd!=='Đóng kiện'&&!d.doiSoat;},1]
 ];
 function dongDS(d,chonDuoc){
   return '<tr class="'+(chonDuoc?'':'chuaxong')+'"'+(CHON_DS[d.ma]&&chonDuoc?' style="background:var(--cxn)"':'')+'>'
@@ -943,7 +947,7 @@ function dongDS(d,chonDuoc){
     +'<td class="so">'+(d.phatSinh?tien(d.phatSinh):'')+'</td><td class="so"><b>'+tien(d.tong)+'</b></td>'
     +'<td class="so">'+tien(d.daTra)+'</td>'
     +'<td class="so" style="color:var('+(d.conLai>0?'--do':'--xanh')+')"><b>'+tien(d.conLai)+'</b></td>'
-    +'<td><button class="nn nho" data-chiphi="'+esc(d.ma)+'">💳</button>'+(d.doiSoat?' <button class="nn nho" data-bods="'+esc(d.doiSoat+'|'+d.ma)+'" title="Đưa về Hoàn thành — chưa đối soát">↩</button>':'')+'</td></tr>';}
+    +'<td><button class="nn nho" data-chiphi="'+esc(d.ma)+'">💳</button>'+(d.doiSoat?' <button class="nn nho" data-bods="'+esc(d.doiSoat+'|'+d.ma)+'" title="Đưa về chưa đối soát (đối tác không duyệt)">↩</button>':'')+'</td></tr>';}
 var MO_DDS={},HET_DDS=5;
 // Mục ĐÃ ĐỐI SOÁT: gom theo từng lần tạo bảng (mới nhất trên cùng); mỗi lần có Mở file · Xuất lại · Bỏ cả lần
 function veDaDoiSoat(loc){var ds=DL.doiSoat,bs=ds.bangDS||[];if(!bs.length)return '';
@@ -961,7 +965,7 @@ function hopXuatLai(maBang){var ds=DL.doiSoat,b=(ds.bangDS||[]).filter(function(
   hop('🔁 Xuất lại '+esc(maBang),'<div class="phu">Tạo file mới với số tiền <b>hiện tại</b> của '+dd.length+' đơn trong lần này (có ảnh sản phẩm). File cũ vẫn giữ trong Drive.</div><div class="o" style="max-height:26vh;overflow:auto;margin-top:6px">'+dd.map(function(d){return '<div class="lan"><span><b>'+esc(d.maChung||d.ma)+'</b> <small style="color:var(--mo)">'+esc(d.tenKhach).slice(0,20)+'</small></span><span>'+tien(d.conLai)+'</span></div>';}).join('')+'</div><label>Email được phép mở bảng</label><input id="fmail" value="'+esc(ds.emailDoiTac||'')+'"><div class="chon2"><label><input type="checkbox" id="fguidt"'+(NHOM_DT?'':' disabled')+'> Gửi link vào nhóm đối tác</label></div>','Xuất lại',function(){
     moKhoa();google.script.run.withSuccessHandler(function(k){dongKhoa();dongHop();hopDaXuat(k);tai();}).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webXuatLaiDoiSoat(KHOA,maBang,document.getElementById('fguidt').checked,document.getElementById('fmail').value.trim());});}
 function hopDaXuat(k){hop('✅ Đã xuất bảng','<div class="o"><div class="lan"><span>Số sản phẩm</span><b>'+k.soDon+'</b></div><div class="lan"><span>Tổng</span><b>'+tien(k.tong)+'</b></div><div class="lan"><span>Còn lại</span><b>'+tien(k.conLai)+'</b></div>'+(k.soAnh!==undefined?'<div class="lan"><span>Ảnh sản phẩm trong file</span><b>'+k.soAnh+'</b></div>':'')+'</div>'+(k.maBang?'<div class="phu" style="margin-top:8px;color:var(--xanh)">'+(k.xuatLai?'🔁 Đã xuất lại <b>'+esc(k.maBang)+'</b> với số tiền mới nhất; link mới đã thay vào nút 📄 Mở file.':'📁 Các đơn đã tick đã chuyển vào mục <b>Đã đối soát</b> ('+esc(k.maBang)+'). Cần thì bấm 🔁 Xuất lại hoặc ↩ để đưa về.')+'</div>':'')+(k.boQua&&k.boQua.length?'<div class="phu" style="margin-top:8px;color:var(--do)">⚠️ Bỏ qua '+k.boQua.length+' đơn còn nằm ở xưởng (chưa gửi xe): '+esc(k.boQua.join(', '))+'</div>':'')+'<div style="margin-top:12px"><a class="nn chinh" href="'+esc(k.url)+'" target="_blank" style="display:block;text-align:center;text-decoration:none">Mở bảng thanh toán</a></div><div class="phu" style="margin-top:8px">Trong bảng: Tệp → Tải xuống → Excel nếu đối tác cần file. Link đã nhắn riêng cho bạn qua Telegram'+(k.daChia&&k.daChia.length?', và chia sẻ cho: '+esc(k.daChia.join(', ')):', chưa chia sẻ cho ai ngoài bạn')+'.</div>','',null);}
-function dsChonDoiSoat(){var ds=DL.doiSoat;if(!ds)return [];return ds.ds.filter(function(d){return CHON_DS[d.ma]&&d.daGiao;});}
+function dsChonDoiSoat(){var ds=DL.doiSoat;if(!ds)return [];return ds.ds.filter(function(d){return CHON_DS[d.ma];});}
 function maChon(){return dsChonDoiSoat().map(function(d){return d.ma;});}
 function tongChon(f){return dsChonDoiSoat().reduce(function(a,d){return a+(d[f]||0);},0);}
 function hopBangPK(){var ds=DL.doiSoat;var x='<div class="o">';(ds.phuKien||[]).forEach(function(p){x+='<div class="lan"><span>'+(p.dangDung?'':'<s>')+esc(p.ten)+(p.dangDung?'':'</s>')+' <small style="color:var(--mo)">'+esc(p.ma)+'</small></span><span style="display:flex;gap:6px;align-items:center"><input type="number" inputmode="numeric" value="'+p.donGia+'" data-pkgia="'+esc(p.ma)+'" style="width:110px;padding:6px 8px"><button class="nn nho" data-pkluu="'+esc(p.ma)+'">Lưu</button><button class="nn nho" data-pkan="'+esc(p.ma)+'" data-dd="'+(p.dangDung?1:0)+'">'+(p.dangDung?'Ẩn':'Hiện')+'</button></span></div>';});if(!(ds.phuKien||[]).length)x+='<div class="trong">Chưa có phụ kiện nào.</div>';x+='</div>';
