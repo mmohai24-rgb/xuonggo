@@ -365,7 +365,7 @@ function napAnhTG(){
     if(IO_ANH)IO_ANH.observe(im);else HANG_ANH[t]=1;});
   henNapAnh();}
 function henNapAnh(){clearTimeout(HEN_ANH);HEN_ANH=setTimeout(guiNapAnh,120);}
-function guiNapAnh(){if(dangNap)return;var ds=Object.keys(HANG_ANH).filter(function(t){return !anhTG(t);}).slice(0,12);
+function guiNapAnh(){if(dangNap)return;var ds=Object.keys(HANG_ANH).filter(function(t){return !anhTG(t);}).slice(0,4);
   Object.keys(HANG_ANH).forEach(function(t){if(anhTG(t))delete HANG_ANH[t];});dienAnh();if(!ds.length)return;
   ds.forEach(function(t){delete HANG_ANH[t];});dangNap=true;
   google.script.run.withSuccessHandler(function(m){dangNap=false;m=m||{};Object.keys(m).forEach(function(t){ANH_TG[t]=m[t];luuAnhMay(t,m[t]);});
@@ -436,6 +436,7 @@ function hopChiTiet(ma){var d=(SX&&SX.ds||[]).filter(function(x){return x.ma===m
   hop('📋 '+esc(d.maChung||d.ma)+(d.maChung?' <small style="color:var(--mo);font-weight:400">'+esc(d.ma)+'</small>':''),x,'',null);gan();napAnhTG();}
 // 02/10: PHIÊN BẢN hiện dưới tên xưởng — MỖI LẦN TRIỂN KHAI thêm 1 dòng lên ĐẦU (số = số phiên bản Apps Script sẽ tạo)
 var PHIEN_BAN=[
+  ['65','04/10/2026','🖼 Ảnh hiện nhanh hơn (máy chủ ảnh Google) — ảnh cũ chỉ có trên Telegram đưa hết lên Drive'],
   ['64','03/10/2026','⚡ Bảng mở từ trang GitHub (nhanh hơn, hiện ngay dữ liệu lần trước) — link bot đổi sang trang mới'],
   ['63','03/10/2026','🔍 Ô tra mã đơn ở đầu trang — gõ mã, bấm là mở chi tiết đơn'],
   ['62','03/10/2026','Gửi thông tin đơn: Zalo nhận được ảnh (gửi ảnh riêng, chữ chép sẵn để dán) · nút Gửi chữ'],
