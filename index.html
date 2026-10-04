@@ -129,6 +129,7 @@ table.tk.rong td,table.tk.rong th{white-space:nowrap}
 .hopct .hang{margin:0 0 10px;box-shadow:none}
 .xongdong{font-size:13.5px}.xongdong.lui{opacity:.55}.xongdong.lui b{text-decoration:line-through}
 .dsma{display:flex;gap:7px;align-items:center}.dsanh{width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid var(--vien);cursor:pointer;flex:none;background:var(--nen2,#eee)}
+.dstg{font-size:11.5px;color:var(--mo);margin-top:2px;line-height:1.35}
 .dsanh0{width:42px;height:42px;border-radius:7px;border:1px dashed var(--vien);flex:none;display:flex;align-items:center;justify-content:center;color:var(--mo);font-size:15px}
 tr.nhomdds td{background:var(--cxn);padding:8px 6px}tr.nhomdds .np{display:inline-flex;gap:6px;flex-wrap:wrap;margin-left:6px;vertical-align:middle}
 tr.nhomdds .nn.nho,tr.lands .nn.nho{padding:3px 8px;font-size:12px}tr.lands td{background:#fbf6ef;border-top:1px dashed var(--vien)}
@@ -440,6 +441,7 @@ function hopChiTiet(ma){var d=(SX&&SX.ds||[]).filter(function(x){return x.ma===m
   hop('📋 '+esc(d.maChung||d.ma)+(d.maChung?' <small style="color:var(--mo);font-weight:400">'+esc(d.ma)+'</small>':''),x,'',null);gan();napAnhTG();}
 // 02/10: PHIÊN BẢN hiện dưới tên xưởng — MỖI LẦN TRIỂN KHAI thêm 1 dòng lên ĐẦU (số = số phiên bản Apps Script sẽ tạo)
 var PHIEN_BAN=[
+  ['70','04/10/2026','🎨 Đối soát: mỗi đơn hiện ngày vào xưởng, ngày gửi màu cho đối tác + số ngày tính từ đó · file gửi đối tác có thêm 2 cột này'],
   ['69','04/10/2026','📄 Đối soát: tick được đơn ở mọi trạng thái (đơn chưa gửi xe mà đối tác đã trả) · ↩ đưa về chưa đối soát nếu đối tác không duyệt'],
   ['68','04/10/2026','🔧 Sửa nút + Chi ở tab Thu chi không mở trên trang GitHub'],
   ['67','04/10/2026','👷 Thu chi: chọn danh mục Nhân sự → ghi tạm ứng / thanh toán cho từng người · đính ảnh chuyển khoản, thợ nhận kèm ảnh'],
@@ -940,7 +942,7 @@ var NHOM_DS=[
 function dongDS(d,chonDuoc){
   return '<tr class="'+(chonDuoc?'':'chuaxong')+'"'+(CHON_DS[d.ma]&&chonDuoc?' style="background:var(--cxn)"':'')+'>'
     +'<td>'+(chonDuoc?'<input type="checkbox" class="ck" data-chonds="'+esc(d.ma)+'"'+(CHON_DS[d.ma]?' checked':'')+'>':'<span style="color:var(--mo)">—</span>')+'</td>'
-    +'<td><div class="dsma">'+(d.anh?imgAnh(d.anh,'dsanh','data-anh="'+esc(d.ma)+'"'):'<span class="dsanh0" title="Chưa có ảnh">▫</span>')+'<div>'+maBam(d.ma,d.ma)+'<br><small>'+esc(d.maChung)+' · '+esc(d.tenKhach).slice(0,18)+'</small></div></div></td>'
+    +'<td><div class="dsma">'+(d.anh?imgAnh(d.anh,'dsanh','data-anh="'+esc(d.ma)+'"'):'<span class="dsanh0" title="Chưa có ảnh">▫</span>')+'<div>'+maBam(d.ma,d.ma)+'<br><small>'+esc(d.maChung)+' · '+esc(d.tenKhach).slice(0,18)+'</small>'+tgDS(d)+'</div></div></td>'
     +'<td><small>'+esc(ngayGon(d.ngayGiao)||d.cd)+'</small></td>'
     +'<td class="so">'+(d.giaThanh?tien(d.giaThanh):'<span style="color:var(--do)">?</span>')+'</td>'
     +'<td class="so">'+(d.soKien||'')+'</td><td class="so">'+(d.phuKien?tien(d.phuKien):'')+'</td>'
@@ -948,6 +950,11 @@ function dongDS(d,chonDuoc){
     +'<td class="so">'+tien(d.daTra)+'</td>'
     +'<td class="so" style="color:var('+(d.conLai>0?'--do':'--xanh')+')"><b>'+tien(d.conLai)+'</b></td>'
     +'<td><button class="nn nho" data-chiphi="'+esc(d.ma)+'">💳</button>'+(d.doiSoat?' <button class="nn nho" data-bods="'+esc(d.doiSoat+'|'+d.ma)+'" title="Đưa về chưa đối soát (đối tác không duyệt)">↩</button>':'')+'</td></tr>';}
+// 04/10: mốc thời gian để làm việc với đối tác — đếm từ ngày GỬI MÀU (đơn đã gửi xe thì tới ngày gửi xe)
+function tgDS(d){var x=[];if(d.vaoXuong)x.push('vào xưởng '+esc(ngayGon(d.vaoXuong)));
+  if(d.guiMau)x.push('<b style="color:var('+(d.ngayTuMau>=14?'--do':d.ngayTuMau>=7?'--cam':'--chu')+')">🎨 gửi màu '+esc(ngayGon(d.guiMau))+' · '+d.ngayTuMau+' ngày</b>');
+  else if(d.ngayXuong!==null&&d.ngayXuong!==undefined)x.push(d.ngayXuong+' ngày trong xưởng');
+  return x.length?'<div class="dstg">'+x.join(' · ')+'</div>':'';}
 var MO_DDS={},HET_DDS=5;
 // Mục ĐÃ ĐỐI SOÁT: gom theo từng lần tạo bảng (mới nhất trên cùng); mỗi lần có Mở file · Xuất lại · Bỏ cả lần
 function veDaDoiSoat(loc){var ds=DL.doiSoat,bs=ds.bangDS||[];if(!bs.length)return '';
