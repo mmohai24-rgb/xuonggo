@@ -440,6 +440,7 @@ function hopChiTiet(ma){var d=(SX&&SX.ds||[]).filter(function(x){return x.ma===m
   hop('📋 '+esc(d.maChung||d.ma)+(d.maChung?' <small style="color:var(--mo);font-weight:400">'+esc(d.ma)+'</small>':''),x,'',null);gan();napAnhTG();}
 // 02/10: PHIÊN BẢN hiện dưới tên xưởng — MỖI LẦN TRIỂN KHAI thêm 1 dòng lên ĐẦU (số = số phiên bản Apps Script sẽ tạo)
 var PHIEN_BAN=[
+  ['68','04/10/2026','🔧 Sửa nút + Chi ở tab Thu chi không mở trên trang GitHub'],
   ['67','04/10/2026','👷 Thu chi: chọn danh mục Nhân sự → ghi tạm ứng / thanh toán cho từng người · đính ảnh chuyển khoản, thợ nhận kèm ảnh'],
   ['66','04/10/2026','✕ Nút đóng ở góc trên mọi hộp · nút Đóng / Lưu luôn nằm dưới cùng, không phải kéo xuống'],
   ['65','04/10/2026','🖼 Ảnh hiện nhanh hơn (máy chủ ảnh Google) — ảnh cũ chỉ có trên Telegram đưa hết lên Drive'],
@@ -1494,8 +1495,8 @@ function veTC(){var tc=DL.thuChi;if(!tc)return '<div class="trong">Chưa có d�
   o.push('</div>');
   o.push('<div class="phu" style="margin-top:8px">Tự động: đối tác trả (khi anh sửa "Đã trả" ở 💳), cọc / thu đủ đơn tự nhập, lương–khoán–tạm ứng (tab Nhân sự). Ghi tay: nút <b>+ Thu</b> / <b>+ Chi</b> trên bảng này (bot Telegram không ghi thu chi nữa).</div>');
   return o.join('');}
-var LOAI_PHIEU_ANH=['Tạm ứng','Thanh toán'];
-function anhChungTuHtml(x){var a=x.anh||[];if(!x.xoaDuoc&&LOAI_PHIEU_ANH.indexOf(x.loaiPhieu)<0&&!a.length)return '';
+// 04/10: KHÔNG dùng biến toàn cục ở đây — trang GitHub vẽ dữ liệu lưu trên máy ngay khi mở, trước khi các dòng var phía sau chạy
+function anhChungTuHtml(x){var a=x.anh||[];if(!x.xoaDuoc&&['Tạm ứng','Thanh toán'].indexOf(x.loaiPhieu)<0&&!a.length)return '';
   if(!a.length)return '<div style="margin-top:3px"><span class="link" data-tcthemanh="'+esc(x.ma)+'" style="cursor:pointer;font-size:11.5px">📎 thêm ảnh hoá đơn / CK</span></div>';
   var h='<div class="tc-anh">';a.forEach(function(p){h+=imgAnh(p,'','data-tcxem="'+esc(p.link||'')+'" data-tcxemtg="'+esc(p.tg||'')+'" data-tcanhdong="'+p.dong+'"');});
   h+='<div class="them" data-tcthemanh="'+esc(x.ma)+'" title="Thêm ảnh">📎</div></div>';return h;}
