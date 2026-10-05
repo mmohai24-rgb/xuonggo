@@ -1016,7 +1016,9 @@ function dongChoDT(d){var m=d.mucChoDT||'';var mau=m==='do'?'background:var(--do
   return '<div class="meta"><span class="nhanloi" style="'+mau+'">'+(m==='do'?'🔴':m==='vang'?'🟡':'⏳')+' đã gửi '+gi+' <b>'+soNgay(d.choDTNgay)+'</b>, đối tác chưa phản hồi</span>'+(d.nhacDTLan?'<span style="color:var(--mo)">📣 đã nhắc '+d.nhacDTLan+' lần'+(d.nhacDTLuc?' · '+esc(ngayGon(d.nhacDTLuc)):'')+'</span>':'')+'</div>';}
 function dongPhuKien(d){var pk=d.phuKien||[];if(!pk.length)return '';return '<div class="meta"><span>🔩 '+pk.map(function(p){return esc(p.ten)+(Number(p.soLuong)!==1?' ×'+esc(p.soLuong):'');}).join(' · ')+'</span></div>';}
 // ===== 05/10: tab VIỆC CỦA TÔI (chỉ quản lý) — 3 cột: cần tôi xử lý · đã giao chờ xong · việc riêng =====
-var locNhomVT='tatca', MO_XONG_VT=false;
+var locNhomVT='tatca', MO_XONG_VT=false, locKPI='';   // locKPI: '' | 'quahan' (chỉ việc quá hạn ở cả 3 cột)
+function quaHanVT(x){return (x.tre===true)||(x.conLai!==null&&x.conLai!==undefined&&Number(x.conLai)<0);}
+function oKPI(so,ten,lop,ma){return '<div class="o '+(lop||'')+' bam'+(locKPI===ma?' chon':'')+'" data-kpivt="'+ma+'"><div class="so">'+so+'</div><div class="ten">'+ten+'</div></div>';}
 function hanVT(v){if(v.conLai===null||v.conLai===undefined)return v.han?'<span class="vth">'+esc(v.han.slice(0,5))+'</span>':'<span class="vth mo">chưa hẹn ngày</span>';
   var c=Number(v.conLai);if(c<0)return '<span class="vth do">🔴 quá hạn '+(-c)+' ngày</span>';if(c===0)return '<span class="vth cam">hôm nay</span>';if(c===1)return '<span class="vth">ngày mai</span>';
   return '<span class="vth">'+esc(v.han.slice(0,5))+' · còn '+c+' ngày</span>';}
@@ -1051,30 +1053,34 @@ function theRiengGiao(v){
 function veVT(){
   var v=DL.viec,o=[];
   if(!v)return '<div class="trong">Chưa có dữ liệu việc. Bấm ↻ để tải lại.</div>';
-  o.push('<div class="luoi vtkpi">'+oSo(v.tong.homNay,'Cần xử lý hôm nay',v.tong.homNay?'sap':'')+oSo(v.tong.quaHan,'Quá hạn',v.tong.quaHan?'canhbao':'')+oSo(v.tong.daGiao,'Đã giao, chờ xong','')+oSo(v.tong.rieng,'Việc riêng còn mở','tim')+'</div>');
+  o.push('<div class="luoi vtkpi">'+oKPI(v.tong.homNay,'Cần xử lý hôm nay',v.tong.homNay?'sap':'','homnay')+oKPI(v.tong.quaHan,'Quá hạn',v.tong.quaHan?'canhbao':'','quahan')+oKPI(v.tong.daGiao,'Đã giao, chờ xong','','dagiao')+oKPI(v.tong.rieng,'Việc riêng còn mở','tim','rieng')+'</div>');
+  var QH=locKPI==='quahan', loc=function(ds){return QH?ds.filter(quaHanVT):ds;};
+  if(QH)o.push('<div class="baoxong" style="margin-bottom:8px">🔴 Đang xem <b>chỉ việc quá hạn</b> — bấm lại ô Quá hạn để xem tất cả.</div>');
   o.push('<div class="vtghi"><input id="vtmoi" placeholder="+ Ghi việc: quán: sửa góc sân thứ 6 · 31/9 đổi màu sơn, hỏi lại mai" autocomplete="off"><button class="nn chinh" id="vtthem">Ghi</button></div>');
   o.push('<div class="phu" style="margin:-4px 0 10px">Gõ tự nhiên: bot hiểu <b>mai · thứ 6 · tuần sau · ngày 20/10</b>, nhóm <b>quán:</b> / <b>bán hàng:</b>, mã đơn ở đầu câu. Nhắn riêng cho bot Telegram cũng ghi được y vậy.</div>');
   o.push('<div class="vtcot">');
   // cột 1
-  var c1=v.tuDon.length+v.riengDon.length;
-  o.push('<div class="vtc"><h2>🔧 Cần tôi xử lý <span class="dem">'+c1+'</span></h2>');
-  if(!c1)o.push('<div class="trong">Không có gì cần anh xử lý 👍</div>');
-  v.tuDon.forEach(function(x){o.push(theTuDon(x));});
-  if(v.riengDon.length){if(v.tuDon.length)o.push('<div class="phu" style="margin:6px 0">Phát sinh anh đã ghi theo đơn</div>');v.riengDon.forEach(function(x){o.push(theRieng(x));});}
+  var tuDon=loc(v.tuDon),riengDon=loc(v.riengDon),daGiaoL=loc(v.daGiao),riengGiaoL=loc(v.riengGiao);
+  var c1=tuDon.length+riengDon.length;
+  o.push('<div class="vtc" id="vtc1"><h2>🔧 Cần tôi xử lý <span class="dem">'+c1+'</span></h2>');
+  if(!c1)o.push('<div class="trong">'+(QH?'Không có việc quá hạn 👍':'Không có gì cần anh xử lý 👍')+'</div>');
+  tuDon.forEach(function(x){o.push(theTuDon(x));});
+  if(riengDon.length){if(tuDon.length)o.push('<div class="phu" style="margin:6px 0">Phát sinh anh đã ghi theo đơn</div>');riengDon.forEach(function(x){o.push(theRieng(x));});}
   o.push('</div>');
   // cột 2
-  var c2=v.daGiao.length+v.riengGiao.length;
-  o.push('<div class="vtc"><h2>👷 Đã giao, chờ xong <span class="dem">'+c2+'</span></h2>');
-  if(!c2)o.push('<div class="trong">Chưa giao việc chụp / đóng kiện cho ai</div>');
-  v.daGiao.forEach(function(x){o.push(theDaGiao(x));});
-  v.riengGiao.forEach(function(x){o.push(theRiengGiao(x));});
+  var c2=daGiaoL.length+riengGiaoL.length;
+  o.push('<div class="vtc" id="vtc2"><h2>👷 Đã giao, chờ xong <span class="dem">'+c2+'</span></h2>');
+  if(!c2)o.push('<div class="trong">'+(QH?'Không có việc đã giao bị quá hạn':'Chưa giao việc chụp / đóng kiện cho ai')+'</div>');
+  daGiaoL.forEach(function(x){o.push(theDaGiao(x));});
+  riengGiaoL.forEach(function(x){o.push(theRiengGiao(x));});
   o.push('</div>');
   // cột 3
-  var ds=locNhomVT==='tatca'?v.rieng:v.rieng.filter(function(x){return (x.nhom||'xưởng')===locNhomVT;});
-  o.push('<div class="vtc"><h2>📝 Việc riêng của tôi <span class="dem">'+v.rieng.length+'</span></h2>');
+  var riengL=loc(v.rieng);
+  var ds=locNhomVT==='tatca'?riengL:riengL.filter(function(x){return (x.nhom||'xưởng')===locNhomVT;});
+  o.push('<div class="vtc" id="vtc3"><h2>📝 Việc riêng của tôi <span class="dem">'+riengL.length+'</span></h2>');
   if(v.rieng.length){o.push('<div>'+['tatca'].concat(v.nhom).map(function(n){var so=n==='tatca'?v.rieng.length:v.rieng.filter(function(x){return (x.nhom||'xưởng')===n;}).length;if(n!=='tatca'&&!so)return '';
     return '<span class="chip'+(locNhomVT===n?' chon':'')+'" data-locvt="'+esc(n)+'">'+(n==='tatca'?'Tất cả':esc(n))+' '+so+'</span>';}).join('')+'</div>');}
-  if(!ds.length)o.push('<div class="trong">'+(v.rieng.length?'Không có việc trong nhóm này':'Chưa có việc riêng. Gõ vào ô trên hoặc nhắn bot.')+'</div>');
+  if(!ds.length)o.push('<div class="trong">'+(QH?'Không có việc riêng quá hạn 👍':v.rieng.length?'Không có việc trong nhóm này':'Chưa có việc riêng. Gõ vào ô trên hoặc nhắn bot.')+'</div>');
   ds.forEach(function(x){o.push(theRieng(x));});
   o.push('</div></div>');
   if(v.xongHomNay.length){o.push('<h2 style="cursor:pointer" id="vtxong">✅ Xong hôm nay <span class="dem">'+v.xongHomNay.length+'</span> <span class="phu">'+(MO_XONG_VT?'▲ ẩn':'▼ xem')+'</span></h2>');
@@ -1095,6 +1101,10 @@ function hopSuaVT(ma){var v=timVT(ma);if(!v)return;
 function themVT(){var e=document.getElementById('vtmoi');if(!e)return;var t=e.value.trim();if(!t)return bao('Gõ việc đã',1);
   chay('webThemViec',[KHOA,t,'','',''],function(k){bao('📝 Đã ghi: '+k.noiDung+(k.han?' · hạn '+k.han:'')+(k.maHien?' · đơn '+k.maHien:'')+(k.nhom?' · nhóm '+k.nhom:''));});}
 function ganVT(){
+  q('[data-kpivt]').forEach(function(c){c.onclick=function(){var k=c.getAttribute('data-kpivt');
+    if(k==='quahan'){locKPI=locKPI==='quahan'?'':'quahan';ve(DL);return;}
+    if(locKPI){locKPI='';ve(DL);}
+    var el=document.getElementById(k==='dagiao'?'vtc2':k==='rieng'?'vtc3':'vtc1');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});};});
   var th=document.getElementById('vtthem');if(th)th.onclick=themVT;
   var inp=document.getElementById('vtmoi');if(inp)inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();themVT();}};
   q('[data-locvt]').forEach(function(c){c.onclick=function(){locNhomVT=c.getAttribute('data-locvt');ve(DL);};});
