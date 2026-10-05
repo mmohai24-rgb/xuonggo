@@ -50,8 +50,8 @@ h1{font-size:18px;margin:0}
 .che{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--xanhnen);color:var(--xanh);text-transform:uppercase;letter-spacing:.4px;vertical-align:middle}
 .che.xem{background:var(--vien);color:var(--mo)}
 .nut{margin-left:auto;background:var(--the);border:1px solid var(--vien);color:var(--chu);border-radius:10px;padding:7px 11px;font-size:14px;cursor:pointer;white-space:nowrap}
-.tabs{display:flex;gap:2px;margin-top:10px}
-.tab{flex:1;text-align:center;padding:9px 4px;font-size:13.5px;font-weight:600;color:var(--mo);border-bottom:2.5px solid transparent;cursor:pointer}
+.tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.tabs::-webkit-scrollbar{display:none}   /* 05/10: 7 tab -> kéo ngang trên điện thoại thay vì xuống dòng */
+.tab{flex:1 0 auto;text-align:center;padding:9px 8px;font-size:13.5px;font-weight:600;color:var(--mo);border-bottom:2.5px solid transparent;cursor:pointer;white-space:nowrap}
 .tab.chon{color:var(--nhan);border-color:var(--nhan)}
 h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--mo);margin:22px 0 9px;font-weight:600;display:flex;align-items:center;gap:8px}
 h2 .dem{background:var(--vien);color:var(--mo);border-radius:99px;padding:0 8px;font-size:11.5px}
@@ -272,13 +272,28 @@ body.chua-dn .boc,body.chua-dn #fab{display:none}
 .tc-bang{font-size:13px;margin-top:4px;min-height:18px;color:var(--mo)}.tc-bang b{color:var(--chu);font-size:15px}
 .tc-doc{font-size:13px;margin-top:5px;line-height:1.45;color:var(--chu)}.tc-doc .chip{cursor:pointer}
 .tc-goi{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.tc-goi .chip{font-weight:700;font-size:13.5px;padding:6px 11px}
+/* 05/10: tab Việc của tôi — điện thoại xếp dọc, màn rộng 3 cột */
+.vtkpi{margin-bottom:12px}
+.vtghi{display:flex;gap:8px;margin-bottom:6px}.vtghi input{flex:1;font-size:15px}.vtghi .nn{padding:0 18px;font-size:15px;font-weight:600}
+.vtcot{display:grid;gap:0 14px;grid-template-columns:1fr}
+@media(min-width:860px){.vtcot{grid-template-columns:repeat(3,minmax(0,1fr))}.vtcot h2{margin-top:10px}}
+.vtc{min-width:0}
+.hang.vt{padding:10px 12px}
+.hang.vt .vtt{font-weight:600;line-height:1.35}
+.hang.vt .vtdon{display:block;font-size:12.5px;color:var(--mo);margin-top:3px}
+.hang.vt .vtdon .xemdon{color:var(--nhan);font-weight:600;cursor:pointer;border-bottom:1px dotted var(--nhan)}
+.hang.vt .vtnhom{float:right;font-size:11px;font-weight:700;background:var(--timnen);color:var(--tim);padding:1px 8px;border-radius:99px;margin-left:8px}
+.hang.vt .meta .do,.vth.do{color:var(--do);font-weight:600}.vth.cam{color:var(--cam);font-weight:600}.vth.mo{color:var(--mo)}
+.hang.vt .viec{margin-top:7px}.hang.vt .viec .nn.nho{padding:6px 9px}
+.hang.vt .nn.xongvt{background:var(--xanhnen);color:var(--xanh);border-color:transparent;font-weight:700}
+.hang.vt.xongroi{opacity:.7}.hang.vt.xongroi .vtt{text-decoration:line-through}
 </style>
 <div class="boc">
 <header>
 <div class="hd1"><div><h1>🪵 Xưởng gỗ <span class="che" id="che"></span></h1><div class="phu" id="capnhat">Đang tải…</div><div class="pb" id="phienban"></div></div>
 <button class="nut" id="lammoi">↻</button><button class="nut" id="taikhoan" style="margin-left:6px" title="Tài khoản · đổi mật khẩu · đăng xuất">👤</button></div>
 <div class="tradon"><input id="tradon" type="search" inputmode="text" autocomplete="off" placeholder="🔍 Tra mã đơn — vd 31/9"><div id="tradonkq" class="tradonkq"></div></div>
-<div class="tabs"><div class="tab chon" data-tab="sx">Sản xuất</div><div class="tab" data-tab="td">Thay đổi</div><div class="tab" data-tab="ds">Đối soát</div><div class="tab" data-tab="dh">Đơn tự nhập</div><div class="tab" data-tab="ns">Nhân sự</div><div class="tab" data-tab="tc">Thu chi</div></div>
+<div class="tabs"><div class="tab" data-tab="vt">Việc của tôi</div><div class="tab chon" data-tab="sx">Sản xuất</div><div class="tab" data-tab="td">Thay đổi</div><div class="tab" data-tab="ds">Đối soát</div><div class="tab" data-tab="dh">Đơn tự nhập</div><div class="tab" data-tab="ns">Nhân sự</div><div class="tab" data-tab="tc">Thu chi</div></div>
 </header>
 <div id="than"><div class="trong">Đang tải dữ liệu…</div></div>
 <div class="chan" id="chan"></div>
@@ -290,7 +305,7 @@ var KHOA = '';   // 04/10: phiên đăng nhập — 05_dang_nhap.js gán
 var NHOM_DT = false;
 var DL = null, SX = null, QUYEN = 'xem', TAB = 'sx', locTT = 'tatca', locSX = 'congdoan', locCD = 'tatca', locThang = '', locDB = '', locDS = '', chiChuaTra = false;
 var locTD = 'tatca', ngayTD = '';
-try { TAB = localStorage.getItem('xg_tab') || 'sx'; } catch (e) {}
+try { TAB = localStorage.getItem('xg_tab') || 'vt'; } catch (e) {}   // 05/10: lần đầu mở = Việc của tôi (thợ tự về Sản xuất)
 
 // 03/10: kích thước inch kèm cm — '93"W x 22"H x 15"D' -> '... (236 x 56 x 38 cm)' (giống ktCm ở máy chủ)
 function ktCm(kt){var s=String(kt||'');if(!s||/\d\s*cm\b/i.test(s))return s;var re=/(\d+(?:[.,]\d+)?)\s*(?:"|”|″|''|inch\b|in\b)/gi,m,cm=[],t=s.replace(/""/g,'"');
@@ -358,6 +373,7 @@ function hop(tieuDe,than,nutOK,khiOK){
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 var PHIEN_BAN=[
+  ['72','05/10/2026','📝 Tab Việc của tôi: việc tự sinh từ đơn (chụp, đóng kiện, chờ đối tác…) · việc riêng theo nhóm (xưởng / quán / bán hàng) · nhắn riêng bot một dòng là ghi, hiểu "mai", "thứ 6", mã đơn · giao việc cho thợ kèm nút Xong · tin sáng 7:30 tóm tắt việc hôm nay · /homnay'],
   ['71','04/10/2026','🔐 Đăng nhập bằng tên + mật khẩu riêng từng người (máy nhớ tới khi bấm Đăng xuất) · bỏ link có mã · 👤 đổi mật khẩu · tab Nhân sự có 🔑 cấp lại mật khẩu · quên mật khẩu nhắn bot /matkhau'],
   ['70','04/10/2026','🎨 Đối soát: mỗi đơn hiện ngày vào xưởng, ngày gửi màu cho đối tác + số ngày tính từ đó · file gửi đối tác có thêm 2 cột này'],
   ['69','04/10/2026','📄 Đối soát: tick được đơn ở mọi trạng thái (đơn chưa gửi xe mà đối tác đã trả) · ↩ đưa về chưa đối soát nếu đối tác không duyệt'],
@@ -999,6 +1015,97 @@ function dongChoDT(d){var m=d.mucChoDT||'';var mau=m==='do'?'background:var(--do
   var gi=d.cd==='Đã chụp mộc, chờ đối tác'?'ảnh mộc':'ảnh màu';
   return '<div class="meta"><span class="nhanloi" style="'+mau+'">'+(m==='do'?'🔴':m==='vang'?'🟡':'⏳')+' đã gửi '+gi+' <b>'+soNgay(d.choDTNgay)+'</b>, đối tác chưa phản hồi</span>'+(d.nhacDTLan?'<span style="color:var(--mo)">📣 đã nhắc '+d.nhacDTLan+' lần'+(d.nhacDTLuc?' · '+esc(ngayGon(d.nhacDTLuc)):'')+'</span>':'')+'</div>';}
 function dongPhuKien(d){var pk=d.phuKien||[];if(!pk.length)return '';return '<div class="meta"><span>🔩 '+pk.map(function(p){return esc(p.ten)+(Number(p.soLuong)!==1?' ×'+esc(p.soLuong):'');}).join(' · ')+'</span></div>';}
+// ===== 05/10: tab VIỆC CỦA TÔI (chỉ quản lý) — 3 cột: cần tôi xử lý · đã giao chờ xong · việc riêng =====
+var locNhomVT='tatca', MO_XONG_VT=false;
+function hanVT(v){if(v.conLai===null||v.conLai===undefined)return v.han?'<span class="vth">'+esc(v.han.slice(0,5))+'</span>':'<span class="vth mo">chưa hẹn ngày</span>';
+  var c=Number(v.conLai);if(c<0)return '<span class="vth do">🔴 quá hạn '+(-c)+' ngày</span>';if(c===0)return '<span class="vth cam">hôm nay</span>';if(c===1)return '<span class="vth">ngày mai</span>';
+  return '<span class="vth">'+esc(v.han.slice(0,5))+' · còn '+c+' ngày</span>';}
+function nhanDon(x){if(!x.maSX)return '';return '<span class="vtdon">'+maBam(x.maSX,x.maChung||x.maSX,'span')+(x.tenKhach?' · '+esc(x.tenKhach):'')+(x.cd||x.cdDon?' · '+esc(x.cd||x.cdDon):'')+'</span>';}
+function theTuDon(x){
+  var nut='';
+  if(x.hanh==='giaonguoi')nut='<button class="nn nho giao" data-giaonguoi="'+esc(x.maSX)+'" data-vt="'+esc(x.vt)+'">👷 Giao cho…</button>';
+  else if(x.hanh==='giaomoc')nut='<button class="nn nho giao" data-sx data-ma="'+esc(x.maSX)+'" data-cd="Đang làm mộc" data-vt="mộc">🪚 Giao thợ mộc</button>';
+  else if(x.hanh==='nhacdt')nut='<button class="nn nho" data-nhacdt="'+esc(x.maSX)+'">📨 Nhắc đối tác</button>';
+  else if(x.hanh==='nhackhoan')nut='<button class="nn nho" data-nhackhoan="'+esc(x.maSX)+'">📨 Nhắc báo khoán</button>';
+  return '<div class="hang vt'+(x.tre?' do':'')+'"><div class="vtt">'+esc(x.tieuDe)+'</div>'+nhanDon(x)
+    +'<div class="meta">'+(x.ngayO!==null&&x.ngayO!==undefined?'<span>ở bước này <b>'+soNgay(x.ngayO)+'</b></span>':'')+(x.tre?'<span class="do">🔴 trễ hạn bước</span>':'')+'</div>'
+    +'<div class="viec">'+nut+'</div></div>';}
+function theRieng(v,oDau){
+  var cls=v.conLai!==null&&v.conLai<0?' do':(v.conLai===0?' camm':'');
+  var nut='<button class="nn nho xongvt" data-xongvt="'+esc(v.ma)+'">✅ Xong</button>'
+    +'<button class="nn nho" data-doivt="'+esc(v.ma)+'">📅 Dời</button>'
+    +(v.maSX||v.nhom!=='quán'?'<button class="nn nho" data-giaovt="'+esc(v.ma)+'">👷 Giao</button>':'')
+    +'<button class="nn nho" data-suavt="'+esc(v.ma)+'">✏️</button>'
+    +'<button class="nn nho" data-bovt="'+esc(v.ma)+'" title="Bỏ việc">✕</button>';
+  return '<div class="hang vt'+cls+'">'+(v.nhom?'<span class="vtnhom">'+esc(v.nhom)+'</span>':'')+'<div class="vtt">'+esc(v.noiDung)+'</div>'+nhanDon(v)
+    +'<div class="meta">'+hanVT(v)+(v.luc?'<span>ghi '+esc(ngayGon(v.luc))+(v.nguon==='Telegram'?' qua bot':'')+'</span>':'')+'</div>'
+    +'<div class="viec">'+nut+'</div></div>';}
+function theDaGiao(x){
+  return '<div class="hang vt'+(x.tre?' do':'')+'"><div class="vtt">'+esc(x.tieuDe)+'</div>'+nhanDon(x)
+    +'<div class="meta"><span>👷 <b>'+esc(x.nguoi)+'</b></span>'+(x.batDau?'<span>giao '+esc(ngayGon(x.batDau))+'</span>':'')+(x.conLai!==null&&x.conLai!==undefined?(x.conLai<0?'<span class="do">🔴 trễ '+soNgay(-x.conLai)+'</span>':'<span>còn '+soNgay(x.conLai)+'</span>'):'')+'</div>'
+    +'<div class="viec"><button class="nn nho" data-nhactho="'+esc(x.maSX)+'" data-ten="'+esc(x.nguoi)+'">📨 Nhắc</button><button class="nn nho" data-xongho="'+esc(x.maSX)+'" data-ten="'+esc(x.nguoi)+'">✅ Xong hộ</button><button class="nn nho" data-giaonguoi="'+esc(x.maSX)+'" data-vt="'+esc(x.cd==='Đóng kiện'?'đóng kiện':'chụp')+'">🔁 Đổi người</button></div></div>';}
+function theRiengGiao(v){
+  return '<div class="hang vt'+(v.conLai!==null&&v.conLai<0?' do':'')+'"><div class="vtt">📝 '+esc(v.noiDung)+'</div>'+nhanDon(v)
+    +'<div class="meta"><span>👷 <b>'+esc(v.tenNguoi||v.nguoiGiao)+'</b></span>'+(v.giaoLuc?'<span>giao '+esc(ngayGon(v.giaoLuc))+'</span>':'')+hanVT(v)+'</div>'
+    +'<div class="viec"><button class="nn nho" data-giaovt="'+esc(v.ma)+'">🔁 Đổi người</button><button class="nn nho xongvt" data-xongvt="'+esc(v.ma)+'">✅ Xong hộ</button><button class="nn nho" data-bovt="'+esc(v.ma)+'">✕</button></div></div>';}
+function veVT(){
+  var v=DL.viec,o=[];
+  if(!v)return '<div class="trong">Chưa có dữ liệu việc. Bấm ↻ để tải lại.</div>';
+  o.push('<div class="luoi vtkpi">'+oSo(v.tong.homNay,'Cần xử lý hôm nay',v.tong.homNay?'sap':'')+oSo(v.tong.quaHan,'Quá hạn',v.tong.quaHan?'canhbao':'')+oSo(v.tong.daGiao,'Đã giao, chờ xong','')+oSo(v.tong.rieng,'Việc riêng còn mở','tim')+'</div>');
+  o.push('<div class="vtghi"><input id="vtmoi" placeholder="+ Ghi việc: quán: sửa góc sân thứ 6 · 31/9 đổi màu sơn, hỏi lại mai" autocomplete="off"><button class="nn chinh" id="vtthem">Ghi</button></div>');
+  o.push('<div class="phu" style="margin:-4px 0 10px">Gõ tự nhiên: bot hiểu <b>mai · thứ 6 · tuần sau · ngày 20/10</b>, nhóm <b>quán:</b> / <b>bán hàng:</b>, mã đơn ở đầu câu. Nhắn riêng cho bot Telegram cũng ghi được y vậy.</div>');
+  o.push('<div class="vtcot">');
+  // cột 1
+  var c1=v.tuDon.length+v.riengDon.length;
+  o.push('<div class="vtc"><h2>🔧 Cần tôi xử lý <span class="dem">'+c1+'</span></h2>');
+  if(!c1)o.push('<div class="trong">Không có gì cần anh xử lý 👍</div>');
+  v.tuDon.forEach(function(x){o.push(theTuDon(x));});
+  if(v.riengDon.length){if(v.tuDon.length)o.push('<div class="phu" style="margin:6px 0">Phát sinh anh đã ghi theo đơn</div>');v.riengDon.forEach(function(x){o.push(theRieng(x));});}
+  o.push('</div>');
+  // cột 2
+  var c2=v.daGiao.length+v.riengGiao.length;
+  o.push('<div class="vtc"><h2>👷 Đã giao, chờ xong <span class="dem">'+c2+'</span></h2>');
+  if(!c2)o.push('<div class="trong">Chưa giao việc chụp / đóng kiện cho ai</div>');
+  v.daGiao.forEach(function(x){o.push(theDaGiao(x));});
+  v.riengGiao.forEach(function(x){o.push(theRiengGiao(x));});
+  o.push('</div>');
+  // cột 3
+  var ds=locNhomVT==='tatca'?v.rieng:v.rieng.filter(function(x){return (x.nhom||'xưởng')===locNhomVT;});
+  o.push('<div class="vtc"><h2>📝 Việc riêng của tôi <span class="dem">'+v.rieng.length+'</span></h2>');
+  if(v.rieng.length){o.push('<div>'+['tatca'].concat(v.nhom).map(function(n){var so=n==='tatca'?v.rieng.length:v.rieng.filter(function(x){return (x.nhom||'xưởng')===n;}).length;if(n!=='tatca'&&!so)return '';
+    return '<span class="chip'+(locNhomVT===n?' chon':'')+'" data-locvt="'+esc(n)+'">'+(n==='tatca'?'Tất cả':esc(n))+' '+so+'</span>';}).join('')+'</div>');}
+  if(!ds.length)o.push('<div class="trong">'+(v.rieng.length?'Không có việc trong nhóm này':'Chưa có việc riêng. Gõ vào ô trên hoặc nhắn bot.')+'</div>');
+  ds.forEach(function(x){o.push(theRieng(x));});
+  o.push('</div></div>');
+  if(v.xongHomNay.length){o.push('<h2 style="cursor:pointer" id="vtxong">✅ Xong hôm nay <span class="dem">'+v.xongHomNay.length+'</span> <span class="phu">'+(MO_XONG_VT?'▲ ẩn':'▼ xem')+'</span></h2>');
+    if(MO_XONG_VT)v.xongHomNay.forEach(function(x){o.push('<div class="hang vt xongroi"><div class="vtt">'+esc(x.noiDung)+'</div><div class="meta"><span>xong '+esc(String(x.xongLuc).slice(11,16))+(x.xongBoi?' · '+esc(x.xongBoi):'')+'</span>'+(x.maChung?'<span>'+esc(x.maChung)+'</span>':'')+'</div><div class="viec"><button class="nn nho" data-movt="'+esc(x.ma)+'">↩ Mở lại</button></div></div>');});}
+  return o.join('');}
+function hopDoiVT(ma){var v=timVT(ma);if(!v)return;
+  hop('📅 Dời hạn — '+esc(v.noiDung.slice(0,40)),'<div class="chips"><button class="chip" data-hanvt="mai">Ngày mai</button><button class="chip" data-hanvt="tuansau">Tuần sau</button><button class="chip" data-hanvt="">Bỏ hạn</button></div><label>Hoặc chọn ngày</label><input type="date" id="fhanvt" value="'+(v.han?v.han.slice(6,10)+'-'+v.han.slice(3,5)+'-'+v.han.slice(0,2):'')+'">','Lưu',function(){doiHanVT(ma,document.getElementById('fhanvt').value);});
+  q('[data-hanvt]').forEach(function(c){c.onclick=function(){doiHanVT(ma,c.getAttribute('data-hanvt'));};});}
+function doiHanVT(ma,gt){chay('webSuaViec',[KHOA,ma,'han',gt],function(k){bao(k.han?'📅 Hạn mới '+k.han:'Đã bỏ hạn');});}
+function timVT(ma){var v=DL.viec;if(!v)return null;return [].concat(v.rieng,v.riengDon,v.riengGiao,v.xongHomNay).filter(function(x){return x.ma===ma;})[0]||null;}
+function hopGiaoVT(ma){var v=timVT(ma);if(!v)return;var ns=(SX&&SX.nhanSu||[]).filter(function(n){return n.dangLam;});
+  hop('👷 Giao việc — '+esc(v.noiDung.slice(0,40)),'<div class="phu">Người có Telegram nhận tin ngay kèm nút ✅ Xong việc'+(v.maSX?' + ảnh đơn':'')+'. Người chưa có Telegram thì anh báo miệng.</div><div class="chips" style="margin-top:8px">'+ns.map(function(n){return '<button class="chip" data-nvvt="'+esc(n.ma)+'">'+esc(n.ten)+(n.telegram?'':' 📵')+'</button>';}).join('')+'</div>','',null);
+  q('[data-nvvt]').forEach(function(c){c.onclick=function(){dongHop();chay('webGiaoViecRieng',[KHOA,ma,c.getAttribute('data-nvvt')],function(k){bao((k.daNhan?'📨 Đã giao + nhắn ':'⚠️ Đã giao nhưng chưa có Telegram: ')+k.nguoi,!k.daNhan);});};});}
+function hopSuaVT(ma){var v=timVT(ma);if(!v)return;
+  hop('✏️ Sửa việc','<label>Nội dung</label><input id="fndvt" value="'+esc(v.noiDung)+'"><label>Nhóm</label><input id="fnhomvt" value="'+esc(v.nhom)+'" list="dsnhomvt" placeholder="xưởng / quán / bán hàng…"><datalist id="dsnhomvt">'+(DL.viec.nhom||[]).map(function(n){return '<option value="'+esc(n)+'">';}).join('')+'</datalist>','Lưu',function(){
+    var nd=document.getElementById('fndvt').value.trim(),nh=document.getElementById('fnhomvt').value.trim();if(!nd)return bao('Chưa có nội dung',1);
+    moKhoa();google.script.run.withSuccessHandler(function(){chay('webSuaViec',[KHOA,ma,'nhom',nh],function(){bao('Đã sửa');});}).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webSuaViec(KHOA,ma,'noiDung',nd);});}
+function themVT(){var e=document.getElementById('vtmoi');if(!e)return;var t=e.value.trim();if(!t)return bao('Gõ việc đã',1);
+  chay('webThemViec',[KHOA,t,'','',''],function(k){bao('📝 Đã ghi: '+k.noiDung+(k.han?' · hạn '+k.han:'')+(k.maHien?' · đơn '+k.maHien:'')+(k.nhom?' · nhóm '+k.nhom:''));});}
+function ganVT(){
+  var th=document.getElementById('vtthem');if(th)th.onclick=themVT;
+  var inp=document.getElementById('vtmoi');if(inp)inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();themVT();}};
+  q('[data-locvt]').forEach(function(c){c.onclick=function(){locNhomVT=c.getAttribute('data-locvt');ve(DL);};});
+  q('[data-xongvt]').forEach(function(b){b.onclick=function(){chay('webSuaViec',[KHOA,b.getAttribute('data-xongvt'),'xong',''],function(){bao('✅ Đã xong');});};});
+  q('[data-bovt]').forEach(function(b){b.onclick=function(){if(!confirm('Bỏ việc này? (vẫn xem lại được trong Sheet)'))return;chay('webSuaViec',[KHOA,b.getAttribute('data-bovt'),'bo',''],function(){bao('Đã bỏ');});};});
+  q('[data-movt]').forEach(function(b){b.onclick=function(){chay('webSuaViec',[KHOA,b.getAttribute('data-movt'),'mo',''],function(){bao('↩ Đã mở lại');});};});
+  q('[data-doivt]').forEach(function(b){b.onclick=function(){hopDoiVT(b.getAttribute('data-doivt'));};});
+  q('[data-giaovt]').forEach(function(b){b.onclick=function(){hopGiaoVT(b.getAttribute('data-giaovt'));};});
+  q('[data-suavt]').forEach(function(b){b.onclick=function(){hopSuaVT(b.getAttribute('data-suavt'));};});
+  var x=document.getElementById('vtxong');if(x)x.onclick=function(){MO_XONG_VT=!MO_XONG_VT;ve(DL);};
+}
 // ===== ĐƠN HÀNG (giữ như cũ) =====
 var VIEC={'Nhận đơn':[['vaosx','🏭 Đưa vào sản xuất',1],['gia','💰 Chốt giá',0],['huy','❌ Huỷ',0]],
   'Báo giá':[['vaosx','🏭 Đưa vào sản xuất',1],['gia','💰 Sửa giá',0],['huy','❌ Huỷ',0]],
@@ -1514,8 +1621,8 @@ function ve(d){DL=d;SX=d.sanXuat;QUYEN=d.quyen;if(typeof d.nhomDT==='boolean')NH
   if(QUYEN==='canhan')return veKhungCaNhan(d);
   document.getElementById('capnhat').textContent='Cập nhật '+d.donHang.capNhat;
   var che=document.getElementById('che');che.textContent=QUYEN==='quanly'?'Điều hành':'Thợ · chỉ xem';che.className='che'+(QUYEN==='quanly'?'':' xem');
-  if(QUYEN!=='quanly'&&(TAB==='dh'||TAB==='ds'||TAB==='td'||TAB==='tc'||TAB==='ns'))TAB='sx';
-  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){if(QUYEN!=='quanly'&&['dh','ds','td','tc','ns'].indexOf(t.getAttribute('data-tab'))>=0){t.style.display='none';}t.className='tab'+(t.getAttribute('data-tab')===TAB?' chon':'');
+  if(QUYEN!=='quanly'&&(TAB==='dh'||TAB==='ds'||TAB==='td'||TAB==='tc'||TAB==='ns'||TAB==='vt'))TAB='sx';
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){if(QUYEN!=='quanly'&&['dh','ds','td','tc','ns','vt'].indexOf(t.getAttribute('data-tab'))>=0){t.style.display='none';}t.className='tab'+(t.getAttribute('data-tab')===TAB?' chon':'');
     t.onclick=function(){TAB=t.getAttribute('data-tab');try{localStorage.setItem('xg_tab',TAB);}catch(e){}ve(DL);};});
   var fab='';
   if(QUYEN==='quanly'&&(TAB==='dh'||TAB==='sx'))fab='<button class="fab" id="themdon">+ Đơn mới (không có file)</button>';
@@ -1524,7 +1631,7 @@ function ve(d){DL=d;SX=d.sanXuat;QUYEN=d.quyen;if(typeof d.nhomDT==='boolean')NH
   document.getElementById('fab').innerHTML=fab;
   if(document.getElementById('themdon'))document.getElementById('themdon').onclick=hopDonMoi;
   if(document.getElementById('themns'))document.getElementById('themns').onclick=hopThemNS;
-  document.getElementById('than').innerHTML=TAB==='sx'?veSX():TAB==='td'?veTD():TAB==='ns'?veNS():TAB==='ds'?veDS():TAB==='tc'?veTC():veDH();
+  document.getElementById('than').innerHTML=TAB==='sx'?veSX():TAB==='vt'?veVT():TAB==='td'?veTD():TAB==='ns'?veNS():TAB==='ds'?veDS():TAB==='tc'?veTC():veDH();
   document.getElementById('chan').innerHTML=(QUYEN==='quanly'?'Dữ liệu từ <a href="'+d.donHang.linkSheet+'" target="_blank">'+esc(d.donHang.tenSheet)+'</a><br>':'Bảng cho thợ — chỉ xem, không có giá<br>')+'Tự làm mới mỗi phút';
   gan();napAnhTG();vePB();ganTraDon();}
 function veKhungCaNhan(d){var t=d.toi;
@@ -1543,6 +1650,7 @@ function veKhungCaNhan(d){var t=d.toi;
 function q(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
 function gan(){
   if(typeof ganTC==='function')ganTC();   // mô-đun Thu chi
+  if(typeof ganVT==='function')ganVT();   // 05/10 Việc của tôi
   q('.chip[data-tt]').forEach(function(c){c.onclick=function(){locTT=c.getAttribute('data-tt');ve(DL);};});
   q('.chip[data-locsx]').forEach(function(c){c.onclick=function(){locSX=c.getAttribute('data-locsx');locDB='';ve(DL);};});
   q('[data-loccd]').forEach(function(c){c.onclick=function(){locCD=c.getAttribute('data-loccd');locDB='';ve(DL);};});
