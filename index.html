@@ -387,6 +387,7 @@ function hop(tieuDe,than,nutOK,khiOK){
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 var PHIEN_BAN=[
+  ['74','06/10/2026','🔧 Đối soát: đơn tự nhập (khách lẻ, đối tác không file) không còn lẫn vào bảng gửi đối tác chính · sửa lỗi chốt giá đơn tự nhập không lưu (bản 73)'],
   ['72','05/10/2026','📝 Tab Việc của tôi: việc tự sinh từ đơn (chụp, đóng kiện, chờ đối tác…) · việc riêng theo nhóm (xưởng / quán / bán hàng) · nhắn riêng bot một dòng là ghi, hiểu "mai", "thứ 6", mã đơn · giao việc cho thợ kèm nút Xong · tin sáng 7:30 tóm tắt việc hôm nay · /homnay'],
   ['71','04/10/2026','🔐 Đăng nhập bằng tên + mật khẩu riêng từng người (máy nhớ tới khi bấm Đăng xuất) · bỏ link có mã · 👤 đổi mật khẩu · tab Nhân sự có 🔑 cấp lại mật khẩu · quên mật khẩu nhắn bot /matkhau'],
   ['70','04/10/2026','🎨 Đối soát: mỗi đơn hiện ngày vào xưởng, ngày gửi màu cho đối tác + số ngày tính từ đó · file gửi đối tác có thêm 2 cột này'],
@@ -1317,7 +1318,7 @@ function hopChiPhi(ma){var s=SX;var d=s.ds.filter(function(x){return x.ma===ma;}
   q('[data-xoacp]').forEach(function(b){b.onclick=function(){if(!confirm('Bỏ dòng này?'))return;chay('webXoaChiPhi',[KHOA,b.getAttribute('data-xoacp')],function(){bao('Đã bỏ');lai();});};});}
 function veDS(){var ds=DL.doiSoat;var o=[];if(!ds)return '<div class="trong">Chưa có dữ liệu đối soát.</div>';
   // 04/10: hiện mọi đơn (trừ Huỷ chưa đối soát) để tick được đơn chưa gửi xe; ô số tiền phía trên vẫn chỉ tính đơn đã đóng kiện / gửi xe / đã đối soát
-  var tatCa=ds.ds.filter(function(d){return d.cd!=='Huỷ'||d.doiSoat;});
+  var tatCa=ds.ds.filter(function(d){return !d.tuNhap&&(d.cd!=='Huỷ'||d.doiSoat);});  // 06/10: đơn tự nhập không thuộc đối soát đối tác chính
   var thangs={};tatCa.forEach(function(d){var k=d.thangGiao||'chưa giao';thangs[k]=(thangs[k]||0)+1;});
   var keys=Object.keys(thangs).sort(function(a,b){return khoaThang(b)>khoaThang(a)?1:-1;});
   var loc=tatCa.filter(function(d){return (!locDS||(d.thangGiao||'chưa giao')===locDS)&&(!chiChuaTra||d.conLai>0);});
@@ -1743,7 +1744,7 @@ function gan(){
   q('[data-chonds]').forEach(function(c){c.onchange=function(){var m=c.getAttribute('data-chonds');
     if(c.checked)CHON_DS[m]=1;else delete CHON_DS[m];ve(DL);};});
   var cta=document.getElementById('chontatca');if(cta)cta.onclick=function(){
-    var ds=DL.doiSoat.ds.filter(function(d){return d.daGiao&&!d.doiSoat&&(!locDS||(d.thangGiao||'chưa giao')===locDS)&&(!chiChuaTra||d.conLai>0);});
+    var ds=DL.doiSoat.ds.filter(function(d){return !d.tuNhap&&d.daGiao&&!d.doiSoat&&(!locDS||(d.thangGiao||'chưa giao')===locDS)&&(!chiChuaTra||d.conLai>0);});
     var het=ds.length&&ds.every(function(d){return CHON_DS[d.ma];});
     ds.forEach(function(d){if(het)delete CHON_DS[d.ma];else CHON_DS[d.ma]=1;});ve(DL);};
   var bc=document.getElementById('boychon');if(bc)bc.onclick=function(){CHON_DS={};ve(DL);};
