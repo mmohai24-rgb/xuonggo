@@ -411,6 +411,7 @@ function hop(tieuDe,than,nutOK,khiOK){
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 var PHIEN_BAN=[
+  ['77','09/10/2026','📨 Gửi thông tin đơn: thêm "🙋 Gửi cho tôi" — bot nhắn riêng anh một tin gồm ảnh + chữ (kích thước, màu…, không giá) để chuyển tiếp cho đối tác hoặc bất kỳ ai'],
   ['76','09/10/2026','👤 Tab Nhân sự gọn trên điện thoại: mỗi người hiện luôn các đơn đang giữ (trễ nhất lên đầu, bấm mở chi tiết) · ✅ Đã làm: số việc tháng này + tổng, bấm mở danh sách từng tháng có số thứ tự (gồm cả đóng kiện) · 💰 Tiền & tài khoản thu gọn'],
   ['74','06/10/2026','🔧 Đối soát: đơn tự nhập (khách lẻ, đối tác không file) không còn lẫn vào bảng gửi đối tác chính · sửa lỗi chốt giá đơn tự nhập không lưu (bản 73)'],
   ['72','05/10/2026','📝 Tab Việc của tôi: việc tự sinh từ đơn (chụp, đóng kiện, chờ đối tác…) · việc riêng theo nhóm (xưởng / quán / bán hàng) · nhắn riêng bot một dòng là ghi, hiểu "mai", "thứ 6", mã đơn · giao việc cho thợ kèm nút Xong · tin sáng 7:30 tóm tắt việc hôm nay · /homnay'],
@@ -858,7 +859,8 @@ function hopGuiDon(ma){var d=SX.ds.filter(function(x){return x.ma===ma;})[0];if(
     +'<div class="gdkhoi"><b>✈️ Gửi qua bot Telegram</b><div class="doi" style="margin-top:6px"><select id="gdden">'
     +nn.map(function(n){return '<option value="'+esc(n.ma)+'">'+esc(n.ten)+'</option>';}).join('')
     +'<option value="NHOM">Nhóm nội bộ</option>'+(NHOM_DT?'<option value="DT">Nhóm đối tác</option>':'')
-    +'</select><button class="nn" id="gdtele">Gửi</button></div><div class="phu">Chỉ người đã bấm /toi với bot mới có trong danh sách.</div></div>';
+    +'<option value="TOI">🙋 Gửi cho tôi</option>'
+    +'</select><button class="nn" id="gdtele">Gửi</button></div><div class="phu">Chỉ người đã bấm /toi với bot mới có trong danh sách. <b>Gửi cho tôi</b>: bot gửi riêng anh một tin gồm ảnh + chữ — nhấn giữ tin → Chuyển tiếp cho đối tác.</div></div>';
   hop('📨 Gửi thông tin — '+esc(d.maChung||d.ma),x,'',null);napAnhTG();
   var chon=function(){return q('[data-gdong]').filter(function(c){return c.checked;}).map(function(c){return Number(c.getAttribute('data-gdong'));});};
   var soAnh=function(){var e=document.getElementById('gdsoanh');if(e)e.textContent=ds.length?'· chọn '+chon().length+'/'+Math.min(ds.length,10):'';};
@@ -883,7 +885,7 @@ function hopGuiDon(ma){var d=SX.ds.filter(function(x){return x.ma===ma;})[0];if(
     try{if(navigator.canShare&&navigator.canShare({files:f})){navigator.share({files:f}).catch(function(e){if(e&&e.name!=='AbortError')tay();});return;}}catch(e){}
     tay();};
   document.getElementById('gdtele').onclick=function(){var den=document.getElementById('gdden').value;if(!den)return bao('Chọn người nhận',1);
-    chay('webGuiThongTinDon',[KHOA,ma,den,document.getElementById('gdchu').value,chon()],function(r){bao('✈️ Đã gửi '+(r&&r.ten?r.ten:'')+(r&&r.soAnh?' · '+r.soAnh+' ảnh':''));});};}
+    chay('webGuiThongTinDon',[KHOA,ma,den,document.getElementById('gdchu').value,chon()],function(r){bao(den==='TOI'?'✈️ Bot đã gửi anh'+(r&&r.soAnh?' '+r.soAnh+' ảnh':'')+(r&&r.gop?' kèm chữ trong một tin':'')+' — mở Telegram, nhấn giữ tin → Chuyển tiếp':'✈️ Đã gửi '+(r&&r.ten?r.ten:'')+(r&&r.soAnh?' · '+r.soAnh+' ảnh':''));});};}
 function fileTuB64(b64,ten){try{var p=String(b64).split(',');var mime=(p[0].match(/:(.*?);/)||[])[1]||'';if(!/^image\//.test(mime))mime='image/jpeg';if(mime==='image/jpeg'&&!/\.jpe?g$/i.test(ten))ten=ten.replace(/\.[^.]*$/,'')+'.jpg';var bin=atob(p[1]);var u=new Uint8Array(bin.length);
   for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],ten,{type:mime});}catch(e){return null;}}
 function chepChu(t,im){var ok=false;try{var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();ok=document.execCommand('copy');a.remove();}catch(e){}
