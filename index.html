@@ -411,6 +411,7 @@ function hop(tieuDe,than,nutOK,khiOK){
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 var PHIEN_BAN=[
+  ['78','09/10/2026','💳 Đối soát: nút "Đối tác đã trả" cho cả một lần DSxxx — gõ số đối tác vừa chuyển (trả đủ hoặc một phần), tự chia vào từng đơn từ trên xuống theo thứ tự trong file, ghi một dòng Thu chi; đầu mỗi lần hiện đã trả / còn lại'],
   ['77','09/10/2026','📨 Gửi thông tin đơn: thêm "🙋 Gửi cho tôi" — bot nhắn riêng anh một tin gồm ảnh + chữ (kích thước, màu…, không giá) để chuyển tiếp cho đối tác hoặc bất kỳ ai'],
   ['76','09/10/2026','👤 Tab Nhân sự gọn trên điện thoại: mỗi người hiện luôn các đơn đang giữ (trễ nhất lên đầu, bấm mở chi tiết) · ✅ Đã làm: số việc tháng này + tổng, bấm mở danh sách từng tháng có số thứ tự (gồm cả đóng kiện) · 💰 Tiền & tài khoản thu gọn'],
   ['74','06/10/2026','🔧 Đối soát: đơn tự nhập (khách lẻ, đối tác không file) không còn lẫn vào bảng gửi đối tác chính · sửa lỗi chốt giá đơn tự nhập không lưu (bản 73)'],
@@ -1320,7 +1321,7 @@ function hopBangCong(ten){moKhoa();google.script.run.withSuccessHandler(function
   ganAnhTC();
   q('[data-xoaphieu]').forEach(function(b){b.onclick=function(){if(!confirm('Huỷ phiếu này?'))return;chay('webXoaPhieu',[KHOA,b.getAttribute('data-xoaphieu')],function(){bao('Đã huỷ phiếu');});};});
 }).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webBangCong(KHOA,ten);}
-// C-006 (2): nút 💳 Đối tác đã trả TẠM ẨN tới khi máy chủ có webDoiTacTraLan — bật bằng window.BAT_DATRALAN=true (chỉ kiểm thử).
+// C-006 (2): nút 💳 Đối tác đã trả cho cả một lần DSxxx — máy chủ webDoiTacTraLan (bản 78). Chia từ trên xuống theo thứ tự dòng trong file (Mã SX tăng dần).
 function hopChiPhi(ma){var s=SX;var d=s.ds.filter(function(x){return x.ma===ma;})[0]||{};var ds=DL.doiSoat;var ct=ds?ds.ds.filter(function(x){return x.ma===ma;})[0]:null;if(!ct)return bao('Chưa có dữ liệu đối soát',1);
   var x='<div class="meta" style="margin-bottom:8px"><span>'+esc(d.maChung||'')+'</span><span>'+esc(d.tenKhach||'')+'</span><span>'+esc(ktCm(d.kichThuoc))+'</span>'+vienCD(d.cd||'')+'</div>';
   x+='<label>Giá thành sản phẩm (hai bên chốt, đồng)'+(ct.giaFile?' — file đối tác ghi '+tien(ct.giaFile):'')+'</label><div class="doi"><input id="fgt" type="number" inputmode="numeric" value="'+(ct.giaThanh||'')+'" placeholder="'+(ct.giaFile||'nhập giá')+'"><button class="nn" id="fgtluu">Lưu giá</button></div>';
@@ -1416,7 +1417,7 @@ function veDaDoiSoat(loc){var ds=DL.doiSoat,bs=ds.bangDS||[];if(!bs.length)retur
   bs.slice(0,HET_DDS).forEach(function(b,i){var dd=loc.filter(function(d){return d.doiSoat===b.ma;});
     var tg=dd.reduce(function(a,d){return a+(d.tong||0);},0),cl=dd.reduce(function(a,d){return a+(d.conLai||0);},0);var mo=MO_DDS[b.ma]!==undefined?MO_DDS[b.ma]:i<2;
     o.push('<tr class="lands"><td colspan="11"><div class="ddsdau"><span style="cursor:pointer" data-modds="'+esc(b.ma)+'">'+(mo?'▾':'▸')+' <b>'+esc(b.ma)+'</b> · '+esc(ngayGon(b.luc)||b.luc)+' · '+dd.length+' đơn · tổng '+gon(tg)+(tg-cl>0?' · đã trả '+gon(tg-cl):'')+' · <span style="color:var('+(cl>0?'--do':'--xanh')+')">'+(cl>0?'còn lại '+gon(cl):'✅ đã trả đủ')+'</span>'+(b.lanXuat>1?' · xuất '+b.lanXuat+' lần':'')+'</span>'
-      +'<div class="np">'+(cl>0&&window.BAT_DATRALAN?'<button class="nn nho chinh" data-datralan="'+esc(b.ma)+'">💳 Đối tác đã trả</button>':'')+(b.link?'<a class="nn nho" href="'+esc(b.link)+'" target="_blank" style="text-decoration:none">📄 Mở file</a>':'')+'<button class="nn nho" data-xuatlai="'+esc(b.ma)+'">🔁 Xuất lại</button><button class="nn nho" data-bods="'+esc(b.ma)+'|">↩ Bỏ cả lần</button></div></div></td></tr>');
+      +'<div class="np">'+(cl>0?'<button class="nn nho chinh" data-datralan="'+esc(b.ma)+'">💳 Đối tác đã trả</button>':'')+(b.link?'<a class="nn nho" href="'+esc(b.link)+'" target="_blank" style="text-decoration:none">📄 Mở file</a>':'')+'<button class="nn nho" data-xuatlai="'+esc(b.ma)+'">🔁 Xuất lại</button><button class="nn nho" data-bods="'+esc(b.ma)+'|">↩ Bỏ cả lần</button></div></div></td></tr>');
     if(mo)dd.forEach(function(d){o.push(dongDS(d,1));});});
   if(bs.length>HET_DDS)o.push('<tr><td colspan="11"><span class="link" id="themdds" style="cursor:pointer">Xem thêm '+(bs.length-HET_DDS)+' lần đối soát cũ…</span></td></tr>');
   return o.join('');}
@@ -1437,7 +1438,7 @@ function hopBangPK(){var ds=DL.doiSoat;var x='<div class="o">';(ds.phuKien||[]).
 
 // C-006(2) 07/10: ghi "Đối tác đã trả" cho CẢ một lần đối soát (trả đủ hoặc một phần). Tiền chia lần lượt từ đơn cũ nhất (vào xưởng sớm nhất);
 // một dòng Thu chi cho cả lần (máy chủ: webDoiTacTraLan — CHƯA viết, chờ anh duyệt ảnh).
-function chiaTienLan(dd,soTien){var con=soTien;return dd.filter(function(d){return (d.conLai||0)>0;}).slice().sort(function(a,b){return String(ngaySoDS(a.vaoXuong)).localeCompare(String(ngaySoDS(b.vaoXuong)));}).map(function(d){var x=Math.min(d.conLai,Math.max(0,con));con-=x;return {d:d,tra:x};});}
+function chiaTienLan(dd,soTien){var con=soTien;return dd.filter(function(d){return (d.conLai||0)>0;}).slice().sort(function(a,b){return a.ma<b.ma?-1:1;}).map(function(d){var x=Math.min(d.conLai,Math.max(0,con));con-=x;return {d:d,tra:x};});}
 function ngaySoDS(s){var m=String(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?m[3]+('0'+m[2]).slice(-2)+('0'+m[1]).slice(-2):'99999999';}
 function hopDaTraLan(maBang){var ds=DL.doiSoat;var dd=ds.ds.filter(function(d){return d.doiSoat===maBang;});
   var tg=dd.reduce(function(a,d){return a+(d.tong||0);},0),cl=dd.reduce(function(a,d){return a+(d.conLai||0);},0);
@@ -1451,7 +1452,7 @@ function hopDaTraLan(maBang){var ds=DL.doiSoat;var dd=ds.ds.filter(function(d){r
     +'<label>Số tiền đối tác vừa chuyển</label><input id="fdtl" inputmode="decimal" value="'+cl.toLocaleString('vi-VN')+'">'
     +'<div class="chon2" style="margin-top:6px"><span class="chip chon" data-dtlnhanh="du">Trả đủ '+tien(cl)+'</span><span class="chip" data-dtlnhanh="mot">Trả một phần</span></div>'
     +'<label>Ghi chú (không bắt buộc)</label><input id="fdtlghi" placeholder="vd: CK Techcombank 07/10">'
-    +'<label>Chia vào từng đơn (đơn vào xưởng sớm trả trước)</label><div class="o" id="fdtlchia" style="max-height:30vh;overflow:auto"></div>'
+    +'<label>Chia vào từng đơn (từ trên xuống, đúng thứ tự dòng trong file đã gửi)</label><div class="o" id="fdtlchia" style="max-height:30vh;overflow:auto"></div>'
     +'<div class="phu" style="margin-top:6px">Ghi vào cột "Đối tác đã trả" từng đơn + <b>một</b> dòng Thu chi "Đối tác trả '+esc(maBang)+'".</div>',
     'Ghi đã trả',function(){var v=docTienTC(document.getElementById('fdtl').value);
       chay('webDoiTacTraLan',[KHOA,maBang,v,document.getElementById('fdtlghi').value.trim()],function(k){bao('Đã ghi '+tien(v)+' cho '+maBang+(k&&k.conLai>0?' · còn lại '+tien(k.conLai):' · ✅ đã trả đủ'));});});
