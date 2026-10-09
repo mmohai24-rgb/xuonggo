@@ -241,6 +241,30 @@ input[type=file]{display:none}
 .pb{font-size:11.5px;color:var(--mo);margin-top:2px;cursor:pointer;display:inline-block;border-bottom:1px dotted var(--mo)}.pb b{color:var(--chu);font-weight:600}
 .pbds .lan{font-size:13.5px}.pbds .lan b{white-space:nowrap}.pbds .moinhat{background:var(--xanhnen);color:var(--xanh);border-radius:5px;padding:0 6px;font-size:11px;font-weight:700;margin-left:4px}
 .nam{background:var(--xanhnen);color:var(--xanh);padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:700}
+/* C-019(a) chip mã đơn từng người — tab Nhân sự */
+.nsdon{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nschip{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:100%;padding:5px 10px;border:1px solid var(--vien);border-left:5px solid var(--vien);border-radius:10px;font-size:12.5px;cursor:pointer;background:var(--the)}
+.nschip small{color:var(--mo)}
+.nschip.t1{border-color:var(--t1)}.nschip.t2{border-color:var(--t2)}.nschip.t3{border-color:var(--t3);border-top-width:2px;border-right-width:2px;border-bottom-width:2px}
+.nstre{font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:99px;color:#fff}
+.nstre.t1,.nstre.sap{background:var(--t1)}.nstre.t2{background:var(--t2)}.nstre.t3{background:var(--t3)}
+/* 09/10 thẻ nhân sự gọn: Đang làm luôn hiện, Đã làm + Tiền thu gọn */
+.nsvt{font-weight:400;font-size:13px;color:var(--mo)}
+.nsdang{margin-top:8px;font-size:13.5px}
+.nsmuc{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:10px;padding:10px 12px;border:1px solid var(--vien);border-radius:10px;background:var(--the);cursor:pointer;font-size:13.5px;line-height:1.35}
+.nsmuc.mo{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.nsmuc.rong{cursor:default;color:var(--mo)}
+.nsso{color:var(--mo)}.nsso b{color:inherit}
+.nsmui{margin-left:auto;color:var(--mo);font-size:15px}
+.nsthan{border:1px solid var(--vien);border-top:0;border-radius:0 0 10px 10px;padding:4px 12px 10px}
+.nsthan .viec{margin-top:8px}
+.nsthang{margin:10px 0 2px;font-size:13px;color:var(--mo);cursor:pointer}
+.nsthang b{color:var(--chu,inherit)}
+.nsphu{padding:4px 0}
+.nsxong{display:grid;grid-template-columns:36px 44px 1fr;gap:0 6px;align-items:baseline;padding:8px 2px;border-bottom:1px dashed var(--vien);font-size:13.5px;cursor:pointer}
+.nsxong:last-child{border-bottom:0}
+.nsxong .stt{color:var(--mo);font-weight:700}.nsxong .ng{color:var(--mo);font-size:12.5px}
+.nsxong small{display:block;color:var(--mo);font-size:12px}
 .dn-lop{position:fixed;inset:0;z-index:100;background:var(--nen);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
 body.chua-dn .boc,body.chua-dn #fab{display:none}
 .dn-the{width:100%;max-width:360px;background:var(--the);border:1px solid var(--vien);border-radius:18px;padding:24px 20px 20px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
@@ -387,6 +411,7 @@ function hop(tieuDe,than,nutOK,khiOK){
   if(nutOK)document.getElementById('okhop').onclick=khiOK;
   document.getElementById('lop').onclick=function(e){if(e.target.id==='lop')dongHop();};}
 var PHIEN_BAN=[
+  ['76','09/10/2026','👤 Tab Nhân sự gọn trên điện thoại: mỗi người hiện luôn các đơn đang giữ (trễ nhất lên đầu, bấm mở chi tiết) · ✅ Đã làm: số việc tháng này + tổng, bấm mở danh sách từng tháng có số thứ tự (gồm cả đóng kiện) · 💰 Tiền & tài khoản thu gọn'],
   ['74','06/10/2026','🔧 Đối soát: đơn tự nhập (khách lẻ, đối tác không file) không còn lẫn vào bảng gửi đối tác chính · sửa lỗi chốt giá đơn tự nhập không lưu (bản 73)'],
   ['72','05/10/2026','📝 Tab Việc của tôi: việc tự sinh từ đơn (chụp, đóng kiện, chờ đối tác…) · việc riêng theo nhóm (xưởng / quán / bán hàng) · nhắn riêng bot một dòng là ghi, hiểu "mai", "thứ 6", mã đơn · giao việc cho thợ kèm nút Xong · tin sáng 7:30 tóm tắt việc hôm nay · /homnay'],
   ['71','04/10/2026','🔐 Đăng nhập bằng tên + mật khẩu riêng từng người (máy nhớ tới khi bấm Đăng xuất) · bỏ link có mã · 👤 đổi mật khẩu · tab Nhân sự có 🔑 cấp lại mật khẩu · quên mật khẩu nhắn bot /matkhau'],
@@ -1293,6 +1318,7 @@ function hopBangCong(ten){moKhoa();google.script.run.withSuccessHandler(function
   ganAnhTC();
   q('[data-xoaphieu]').forEach(function(b){b.onclick=function(){if(!confirm('Huỷ phiếu này?'))return;chay('webXoaPhieu',[KHOA,b.getAttribute('data-xoaphieu')],function(){bao('Đã huỷ phiếu');});};});
 }).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webBangCong(KHOA,ten);}
+// C-006 (2): nút 💳 Đối tác đã trả TẠM ẨN tới khi máy chủ có webDoiTacTraLan — bật bằng window.BAT_DATRALAN=true (chỉ kiểm thử).
 function hopChiPhi(ma){var s=SX;var d=s.ds.filter(function(x){return x.ma===ma;})[0]||{};var ds=DL.doiSoat;var ct=ds?ds.ds.filter(function(x){return x.ma===ma;})[0]:null;if(!ct)return bao('Chưa có dữ liệu đối soát',1);
   var x='<div class="meta" style="margin-bottom:8px"><span>'+esc(d.maChung||'')+'</span><span>'+esc(d.tenKhach||'')+'</span><span>'+esc(ktCm(d.kichThuoc))+'</span>'+vienCD(d.cd||'')+'</div>';
   x+='<label>Giá thành sản phẩm (hai bên chốt, đồng)'+(ct.giaFile?' — file đối tác ghi '+tien(ct.giaFile):'')+'</label><div class="doi"><input id="fgt" type="number" inputmode="numeric" value="'+(ct.giaThanh||'')+'" placeholder="'+(ct.giaFile||'nhập giá')+'"><button class="nn" id="fgtluu">Lưu giá</button></div>';
@@ -1387,8 +1413,8 @@ function veDaDoiSoat(loc){var ds=DL.doiSoat,bs=ds.bangDS||[];if(!bs.length)retur
   o.push('<tr class="nhomds"><td colspan="11"><span class="dinh">📁 <b>Đã đối soát</b> <span class="ghi">· '+bs.length+' lần · '+tongDon+' đơn · tick để xuất lại lẻ</span></span></td></tr>');
   bs.slice(0,HET_DDS).forEach(function(b,i){var dd=loc.filter(function(d){return d.doiSoat===b.ma;});
     var tg=dd.reduce(function(a,d){return a+(d.tong||0);},0),cl=dd.reduce(function(a,d){return a+(d.conLai||0);},0);var mo=MO_DDS[b.ma]!==undefined?MO_DDS[b.ma]:i<2;
-    o.push('<tr class="lands"><td colspan="11"><div class="ddsdau"><span style="cursor:pointer" data-modds="'+esc(b.ma)+'">'+(mo?'▾':'▸')+' <b>'+esc(b.ma)+'</b> · '+esc(ngayGon(b.luc)||b.luc)+' · '+dd.length+' đơn · tổng '+gon(tg)+' · <span style="color:var('+(cl>0?'--do':'--xanh')+')">còn lại '+gon(cl)+'</span>'+(b.lanXuat>1?' · xuất '+b.lanXuat+' lần':'')+'</span>'
-      +'<div class="np">'+(b.link?'<a class="nn nho" href="'+esc(b.link)+'" target="_blank" style="text-decoration:none">📄 Mở file</a>':'')+'<button class="nn nho" data-xuatlai="'+esc(b.ma)+'">🔁 Xuất lại</button><button class="nn nho" data-bods="'+esc(b.ma)+'|">↩ Bỏ cả lần</button></div></div></td></tr>');
+    o.push('<tr class="lands"><td colspan="11"><div class="ddsdau"><span style="cursor:pointer" data-modds="'+esc(b.ma)+'">'+(mo?'▾':'▸')+' <b>'+esc(b.ma)+'</b> · '+esc(ngayGon(b.luc)||b.luc)+' · '+dd.length+' đơn · tổng '+gon(tg)+(tg-cl>0?' · đã trả '+gon(tg-cl):'')+' · <span style="color:var('+(cl>0?'--do':'--xanh')+')">'+(cl>0?'còn lại '+gon(cl):'✅ đã trả đủ')+'</span>'+(b.lanXuat>1?' · xuất '+b.lanXuat+' lần':'')+'</span>'
+      +'<div class="np">'+(cl>0&&window.BAT_DATRALAN?'<button class="nn nho chinh" data-datralan="'+esc(b.ma)+'">💳 Đối tác đã trả</button>':'')+(b.link?'<a class="nn nho" href="'+esc(b.link)+'" target="_blank" style="text-decoration:none">📄 Mở file</a>':'')+'<button class="nn nho" data-xuatlai="'+esc(b.ma)+'">🔁 Xuất lại</button><button class="nn nho" data-bods="'+esc(b.ma)+'|">↩ Bỏ cả lần</button></div></div></td></tr>');
     if(mo)dd.forEach(function(d){o.push(dongDS(d,1));});});
   if(bs.length>HET_DDS)o.push('<tr><td colspan="11"><span class="link" id="themdds" style="cursor:pointer">Xem thêm '+(bs.length-HET_DDS)+' lần đối soát cũ…</span></td></tr>');
   return o.join('');}
@@ -1406,6 +1432,31 @@ function hopBangPK(){var ds=DL.doiSoat;var x='<div class="o">';(ds.phuKien||[]).
   q('[data-pkluu]').forEach(function(b){b.onclick=function(){var m=b.getAttribute('data-pkluu');chay('webSuaPhuKien',[KHOA,m,'',Number(document.querySelector('[data-pkgia="'+m+'"]').value)||0,'',null],function(){bao('Đã lưu giá');});};});
   q('[data-pkan]').forEach(function(b){b.onclick=function(){chay('webSuaPhuKien',[KHOA,b.getAttribute('data-pkan'),'','','',b.getAttribute('data-dd')==='1'?false:true],function(){bao('Đã cập nhật');});};});
   document.getElementById('fnpkthem').onclick=function(){var t=document.getElementById('fnpkten').value.trim();if(!t)return bao('Nhập tên',1);chay('webThemPhuKien',[KHOA,t,Number(document.getElementById('fnpkgia').value)||0,document.getElementById('fnpkdv').value.trim()||'cái',''],function(){bao('Đã thêm '+t);});};}
+
+// C-006(2) 07/10: ghi "Đối tác đã trả" cho CẢ một lần đối soát (trả đủ hoặc một phần). Tiền chia lần lượt từ đơn cũ nhất (vào xưởng sớm nhất);
+// một dòng Thu chi cho cả lần (máy chủ: webDoiTacTraLan — CHƯA viết, chờ anh duyệt ảnh).
+function chiaTienLan(dd,soTien){var con=soTien;return dd.filter(function(d){return (d.conLai||0)>0;}).slice().sort(function(a,b){return String(ngaySoDS(a.vaoXuong)).localeCompare(String(ngaySoDS(b.vaoXuong)));}).map(function(d){var x=Math.min(d.conLai,Math.max(0,con));con-=x;return {d:d,tra:x};});}
+function ngaySoDS(s){var m=String(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?m[3]+('0'+m[2]).slice(-2)+('0'+m[1]).slice(-2):'99999999';}
+function hopDaTraLan(maBang){var ds=DL.doiSoat;var dd=ds.ds.filter(function(d){return d.doiSoat===maBang;});
+  var tg=dd.reduce(function(a,d){return a+(d.tong||0);},0),cl=dd.reduce(function(a,d){return a+(d.conLai||0);},0);
+  var veChia=function(){var v=docTienTC(document.getElementById('fdtl').value);var hang=chiaTienLan(dd,v);var du=v-cl;
+    document.getElementById('fdtlchia').innerHTML=hang.map(function(h){var nhan=h.tra>=h.d.conLai?'<span style="color:var(--xanh)">✅ đủ '+tien(h.tra)+'</span>':h.tra>0?'<span style="color:var(--cam)">trả '+tien(h.tra)+' / '+tien(h.d.conLai)+'</span>':'<span style="color:var(--mo)">chưa trả · '+tien(h.d.conLai)+'</span>';
+      return '<div class="lan"><span><b>'+esc(h.d.maChung||h.d.ma)+'</b> <small style="color:var(--mo)">'+esc(h.d.tenKhach||'').slice(0,18)+'</small></span><span>'+nhan+'</span></div>';}).join('')
+      +(du>0?'<div class="phu" style="color:var(--do);margin-top:6px">⚠️ Nhiều hơn số còn lại '+tien(du)+' — kiểm tra lại số tiền.</div>':'');
+    document.getElementById('okhop').disabled=!(v>0&&du<=0);};
+  hop('💳 Đối tác đã trả — '+esc(maBang),
+    '<div class="o"><div class="lan"><span>'+dd.length+' đơn · tổng</span><b>'+tien(tg)+'</b></div><div class="lan"><span>Đã trả trước đó</span><b>'+tien(tg-cl)+'</b></div><div class="lan"><span>Còn lại</span><b style="color:var(--do)">'+tien(cl)+'</b></div></div>'
+    +'<label>Số tiền đối tác vừa chuyển</label><input id="fdtl" inputmode="decimal" value="'+cl.toLocaleString('vi-VN')+'">'
+    +'<div class="chon2" style="margin-top:6px"><span class="chip chon" data-dtlnhanh="du">Trả đủ '+tien(cl)+'</span><span class="chip" data-dtlnhanh="mot">Trả một phần</span></div>'
+    +'<label>Ghi chú (không bắt buộc)</label><input id="fdtlghi" placeholder="vd: CK Techcombank 07/10">'
+    +'<label>Chia vào từng đơn (đơn vào xưởng sớm trả trước)</label><div class="o" id="fdtlchia" style="max-height:30vh;overflow:auto"></div>'
+    +'<div class="phu" style="margin-top:6px">Ghi vào cột "Đối tác đã trả" từng đơn + <b>một</b> dòng Thu chi "Đối tác trả '+esc(maBang)+'".</div>',
+    'Ghi đã trả',function(){var v=docTienTC(document.getElementById('fdtl').value);
+      chay('webDoiTacTraLan',[KHOA,maBang,v,document.getElementById('fdtlghi').value.trim()],function(k){bao('Đã ghi '+tien(v)+' cho '+maBang+(k&&k.conLai>0?' · còn lại '+tien(k.conLai):' · ✅ đã trả đủ'));});});
+  var o=document.getElementById('fdtl');o.oninput=veChia;
+  q('[data-dtlnhanh]').forEach(function(c){c.onclick=function(){q('[data-dtlnhanh]').forEach(function(x){x.className='chip';});c.className='chip chon';
+    if(c.getAttribute('data-dtlnhanh')==='du')o.value=cl.toLocaleString('vi-VN');else{o.value='';o.focus();}veChia();};});
+  veChia();}
 // ===== THU CHI (mô-đun riêng) =====
 var TC_THANG='',TC_LOC='',TC_DM='';
 function tcPhanTram(a,b){if(!b)return a?'mới':'—';var p=Math.round((a-b)/Math.abs(b)*100);return (p>0?'▲ +':p<0?'▼ ':'= ')+Math.abs(p)+'%';}
@@ -1564,17 +1615,57 @@ function veTD(){
       o.push(x+'</div>');});});
   return o.join('');}
 // ===== NHÂN SỰ =====
+// C-019(a) 07/10: mỗi người một dòng chip mã đơn đang giữ (trễ nhiều nhất lên đầu), bấm chip → hộp chi tiết đơn. Không có giá.
+function soTreNS(ds){return ds.filter(function(d){var m=mucTre(d);return m&&m!=='sap';}).length;}
+function chipDonNS(ds){if(!ds||!ds.length)return '';
+  var xs=ds.slice().sort(function(a,b){var x=(a.conLai===null||a.conLai===undefined)?1e9:Number(a.conLai),y=(b.conLai===null||b.conLai===undefined)?1e9:Number(b.conLai);return x-y;});
+  return '<div class="nsdon">'+xs.map(function(d){var m=mucTre(d),mc=mauCD(d.cd),c=Number(d.conLai);
+    var tre=(m==='t3'||m==='t2'||m==='t1')?'<span class="nstre '+m+'">'+(m==='t3'?'🔴':m==='t2'?'🟠':'🟡')+' trễ '+soNgay(-c)+'</span>':m==='sap'?'<span class="nstre sap">⏰ còn '+soNgay(c)+'</span>':'';
+    return '<span class="nschip'+(m&&m!=='sap'?' '+m:'')+'" data-xemdon="'+esc(d.ma)+'" title="Bấm để xem chi tiết đơn" style="border-left-color:var('+mc[0]+')">'+(ICON_CD[d.cd]||'•')+' <b>'+esc(d.maChung||d.ma)+'</b><small>'+esc(d.cd)+'</small>'+tre+'</span>';}).join('')+'</div>';}
+// 09/10: thẻ gọn trên điện thoại — Đang làm hiện luôn; ✅ Đã làm và 💰 Tiền & tài khoản thu gọn, bấm mới mở.
+var MO_NS={};
+function thangCuaNS(kt){var m=String(kt||'').match(/(\d{2})\/(\d{2})\/(\d{4})/);return m?m[2]+'/'+m[3]:'';}
+function thangNayNS(){var d=new Date();return ('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
+function moNS(k,macDinh){return MO_NS[k]===undefined?!!macDinh:!!MO_NS[k];}
+function nutMoNS(k,mo,than){return '<div class="nsmuc'+(mo?' mo':'')+'" data-nsmo="'+esc(k)+'" data-nsht="'+(mo?'1':'0')+'">'+than+'<span class="nsmui">'+(mo?'▾':'▸')+'</span></div>';}
+function viecNganNS(cd){var M={'Đang làm mộc':'mộc','Sửa lại':'sửa','Chờ chụp mộc':'chụp mộc','Đang sơn PU':'sơn PU','Chờ chụp màu':'chụp màu','Đóng kiện':'đóng kiện'};return (ICON_CD[cd]||'•')+' '+(M[cd]||cd);}
+function xongCuaNS(ten){return ((SX&&SX.viecXong)||[]).concat((SX&&SX.xongDongKien)||[]).filter(function(v){return v.nguoi===ten&&!v.lui;});}
+function demXongNS(ten,ds){var dm=SX&&SX.demXong&&SX.demXong[ten];if(dm)return {tong:dm.tong||0,theoThang:dm.thang||{}};
+  var t={};ds.forEach(function(v){var th=thangCuaNS(v.kt);if(th)t[th]=(t[th]||0)+1;});return {tong:ds.length,theoThang:t};}
+function khoiXongNS(ten){var ds=xongCuaNS(ten),dm=demXongNS(ten,ds),tn=thangNayNS(),k='x:'+ten,mo=moNS(k,false);
+  var soThang=dm.theoThang[tn]||0;
+  if(!dm.tong)return '<div class="nsmuc rong">✅ Đã làm: chưa có việc nào được ghi</div>';
+  var o=[nutMoNS(k,mo,'✅ <b>Đã làm</b><span class="nsso">tháng '+tn.slice(0,2)+': <b>'+soThang+'</b> · tổng <b>'+dm.tong+'</b></span>')];
+  if(!mo)return o.join('');
+  var ths=Object.keys(dm.theoThang);if(ths.indexOf(tn)<0)ths.push(tn);
+  ths.sort(function(a,b){var x=a.split('/'),y=b.split('/');return (y[1]+y[0]).localeCompare(x[1]+x[0]);});
+  o.push('<div class="nsthan">');
+  ths.forEach(function(th){var n=dm.theoThang[th]||0,km='m:'+ten+':'+th,mt=moNS(km,th===tn);
+    var dong=ds.filter(function(v){return thangCuaNS(v.kt)===th;}).sort(function(a,b){var x=ngayGioNS(a.kt),y=ngayGioNS(b.kt);return x-y;});
+    o.push('<div class="nsthang" data-nsmo="'+esc(km)+'" data-nsht="'+(mt?'1':'0')+'">'+(mt?'▾':'▸')+' Tháng '+esc(th)+' · <b>'+n+'</b> việc</div>');
+    if(!mt)return;
+    if(!dong.length){o.push('<div class="phu nsphu">'+(n?'Tháng này đã cũ, chi tiết xem ở 💰 Bảng công.':'Chưa có việc nào.')+'</div>');return;}
+    var hang=dong.map(function(v,i){return '<div class="nsxong" data-xemdon="'+esc(v.ma)+'"><span class="stt">#'+(i+1)+'</span><span class="ng">'+esc(String(v.kt).slice(0,5))+'</span><span class="nd"><b>'+esc(v.maChung||v.ma)+'</b> · '+viecNganNS(v.cd)+(v.khach?'<small>'+esc(v.khach)+'</small>':'')+'</span></div>';});
+    o.push(hang.reverse().join(''));});
+  o.push('</div>');return o.join('');}
+function ngayGioNS(kt){var m=String(kt||'').match(/(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);return m?new Date(+m[3],m[2]-1,+m[1],+(m[4]||0),+(m[5]||0)).getTime():0;}
 function veNS(){var s=SX;var o=[];
   if(!s){return '<div class="trong">Chưa có dữ liệu.</div>';}
   if(QUYEN==='quanly'&&DL.khoan){var tn=DL.khoan.theoNguoi;var tongCon=tn.reduce(function(a,k){return a+k.conLai;},0),tongThang=tn.reduce(function(a,k){return a+k.thangNay.tien;},0),monThang=tn.reduce(function(a,k){return a+k.thangNay.mon;},0),cg=tn.reduce(function(a,k){return a+k.chuaGia;},0);
     o.push('<h2>Tiền khoán</h2><div class="luoi luoi3">'+oSo(monThang,'Món xong tháng '+esc(DL.khoan.thangNay.slice(0,2)),'tien')+oSo(gon(tongThang),'Khoán tháng này','tien')+oSo(gon(tongCon),'Còn phải trả thợ','tien'+(tongCon>0?' sap':''))+'</div>'+(cg?'<div class="phu" style="margin-top:6px;color:var(--do)">⚠️ '+cg+' món đã giao nhưng chưa có tiền khoán — bấm 💰 Khoán trên thẻ đơn để điền.</div>':''));}
   o.push('<h2>Nhân sự <span class="dem">'+s.nhanSu.length+'</span></h2>');
-  s.nhanSu.forEach(function(n){var ds=s.theoNguoi[n.ten]||[];
+  s.nhanSu.forEach(function(n){var ds=s.theoNguoi[n.ten]||[],tre=soTreNS(ds);
     var kn=(QUYEN==='quanly'&&DL.khoan)?DL.khoan.theoNguoi.filter(function(k){return k.ten===n.ten;})[0]:null;
-    o.push('<div class="hang'+(n.dangLam?'':' ')+'"><div class="sp">👤 '+esc(n.ten)+(n.dangLam?'':' <span class="vien" style="background:var(--vien);color:var(--mo)">nghỉ</span>')+'</div>'+
-      '<div class="meta"><span>'+esc(n.vaiTro)+'</span><span>'+(n.telegram?'📱 đã kết nối Telegram':'📵 <b>chưa có Telegram ID</b>')+'</span><span>đang giữ <b>'+ds.length+'</b> việc</span></div>');
-    if(kn&&(kn.soMonXong||kn.soDang||kn.conLai||kn.ung))o.push('<div class="meta" style="margin-top:6px"><span>📅 tháng '+esc(DL.khoan.thangNay.slice(0,2))+': <b>'+kn.thangNay.mon+' món</b> · '+tien(kn.thangNay.tien)+'</span><span>tổng xong <b>'+kn.soMonXong+'</b> món · '+tien(kn.tongXong)+'</span><span>đang làm <b>'+kn.soDang+'</b> món · '+tien(kn.tongDang)+'</span><span>đã ứng '+tien(kn.ung)+'</span><span>đã thanh toán '+tien(kn.thanhToan)+'</span><span'+(kn.conLai>0?' style="color:var(--cam);font-weight:700"':'')+'>còn phải trả <b>'+tien(kn.conLai)+'</b></span>'+(kn.chuaGia?'<span style="color:var(--do)">⚠️ '+kn.chuaGia+' món chưa có giá khoán</span>':'')+'</div>');
-    if(QUYEN==='quanly')o.push('<div class="viec"><button class="nn chinh nho" data-bangcong="'+esc(n.ten)+'">💰 Bảng công</button><button class="nn nho" data-tien="Tạm ứng" data-ten="'+esc(n.ten)+'">💵 Tạm ứng</button><button class="nn nho" data-tien="Thanh toán" data-ten="'+esc(n.ten)+'">✅ Thanh toán</button><button class="nn nho" data-ns="tg" data-ma="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'">📱 Telegram ID</button><button class="nn nho" data-ns="vt" data-ma="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'" data-vt="'+esc(n.vaiTro)+'">✏️ Vai trò</button><button class="nn nho" data-ns="dl" data-ma="'+esc(n.ma)+'" data-dl="'+(n.dangLam?'1':'0')+'">'+(n.dangLam?'⏸ Cho nghỉ':'▶️ Làm lại')+'</button><button class="nn nho" data-tk="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'">🔑 Tài khoản</button></div>');
+    o.push('<div class="hang nsthe"><div class="sp">👤 '+esc(n.ten)+' <span class="nsvt">'+esc(n.vaiTro)+'</span>'+(n.dangLam?'':' <span class="vien" style="background:var(--vien);color:var(--mo)">nghỉ</span>')+'</div>'+
+      (n.telegram?'':'<div class="meta"><span>📵 <b>chưa có Telegram ID</b></span></div>')+
+      '<div class="nsdang">🔨 <b>Đang làm '+ds.length+'</b>'+(tre?' · <b style="color:var(--do)">'+tre+' trễ</b>':'')+(ds.length?'':' <span class="phu">— không giữ việc nào</span>')+'</div>'+chipDonNS(ds));
+    o.push(khoiXongNS(n.ten));
+    if(QUYEN==='quanly'){var kt='t:'+n.ten,mt=moNS(kt,false);
+      var tom=kn?((kn.conLai>0?' · còn phải trả <b style="color:var(--cam)">'+gon(kn.conLai)+'</b>':'')+(kn.chuaGia?' · <span style="color:var(--do)">⚠️ '+kn.chuaGia+' chưa giá</span>':'')):'';
+      o.push(nutMoNS(kt,mt,'💰 <b>Tiền &amp; tài khoản</b><span class="nsso">'+tom+'</span>'));
+      if(mt){o.push('<div class="nsthan">');
+        if(kn&&(kn.soMonXong||kn.soDang||kn.conLai||kn.ung))o.push('<div class="meta"><span>📅 tháng '+esc(DL.khoan.thangNay.slice(0,2))+': <b>'+kn.thangNay.mon+' món</b> · '+tien(kn.thangNay.tien)+'</span><span>tổng xong <b>'+kn.soMonXong+'</b> món · '+tien(kn.tongXong)+'</span><span>đang làm <b>'+kn.soDang+'</b> món · '+tien(kn.tongDang)+'</span><span>đã ứng '+tien(kn.ung)+'</span><span>đã thanh toán '+tien(kn.thanhToan)+'</span><span'+(kn.conLai>0?' style="color:var(--cam);font-weight:700"':'')+'>còn phải trả <b>'+tien(kn.conLai)+'</b></span>'+(kn.chuaGia?'<span style="color:var(--do)">⚠️ '+kn.chuaGia+' món chưa có giá khoán</span>':'')+'</div>');
+        o.push('<div class="viec"><button class="nn chinh nho" data-bangcong="'+esc(n.ten)+'">💰 Bảng công</button><button class="nn nho" data-tien="Tạm ứng" data-ten="'+esc(n.ten)+'">💵 Tạm ứng</button><button class="nn nho" data-tien="Thanh toán" data-ten="'+esc(n.ten)+'">✅ Thanh toán</button><button class="nn nho" data-ns="tg" data-ma="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'">📱 Telegram ID</button><button class="nn nho" data-ns="vt" data-ma="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'" data-vt="'+esc(n.vaiTro)+'">✏️ Vai trò</button><button class="nn nho" data-ns="dl" data-ma="'+esc(n.ma)+'" data-dl="'+(n.dangLam?'1':'0')+'">'+(n.dangLam?'⏸ Cho nghỉ':'▶️ Làm lại')+'</button><button class="nn nho" data-tk="'+esc(n.ma)+'" data-ten="'+esc(n.ten)+'">🔑 Tài khoản</button></div></div>');}}
     o.push('</div>');});
   o.push('<div class="o" style="margin-top:14px"><b>Kết nối Telegram cho thợ (tự làm, 30 giây):</b><div class="phu" style="margin-top:4px">Mỗi thợ mở Telegram, tìm bot <b>@Troly_thomoc_bot</b>, bấm Start, gõ <b>/toi</b> rồi bấm tên mình. Xong — bot sẽ nhắn việc riêng, gửi ảnh mẫu và có nút ✅ Xong. (Cách cũ: gõ /id lấy dãy số rồi dán vào nút 📱 ở trên.)</div></div>');
   return o.join('');}
@@ -1750,6 +1841,7 @@ function gan(){
   var bc=document.getElementById('boychon');if(bc)bc.onclick=function(){CHON_DS={};ve(DL);};
   var xb=document.getElementById('xuatbang');if(xb)xb.onclick=hopXuatBang;
   q('[data-modds]').forEach(function(c){c.onclick=function(){var m=c.getAttribute('data-modds');var bs=DL.doiSoat.bangDS||[];var i=bs.map(function(x){return x.ma;}).indexOf(m);var dang=MO_DDS[m]!==undefined?MO_DDS[m]:i<2;MO_DDS[m]=!dang;ve(DL);};});
+  q('[data-datralan]').forEach(function(b){b.onclick=function(){hopDaTraLan(b.getAttribute('data-datralan'));};});
   q('[data-xuatlai]').forEach(function(b){b.onclick=function(){hopXuatLai(b.getAttribute('data-xuatlai'));};});
   q('[data-bods]').forEach(function(b){b.onclick=function(){var p=b.getAttribute('data-bods').split('|');var hoi=p[1]?'Đưa '+p[1]+' về mục Hoàn thành — chưa đối soát?':'Bỏ cả lần '+p[0]+'? Các đơn trong đó về mục chưa đối soát (file đã gửi vẫn giữ trong Drive).';if(!confirm(hoi))return;chay('webBoDoiSoat',[KHOA,p[0],p[1]||''],function(){bao(p[1]?'Đã đưa '+p[1]+' về':'Đã bỏ lần '+p[0]);});};});
   var tdds=document.getElementById('themdds');if(tdds)tdds.onclick=function(){HET_DDS+=10;ve(DL);};
@@ -1760,6 +1852,7 @@ function gan(){
   q('[data-thang]').forEach(function(b){b.onclick=function(){locThang=b.getAttribute('data-thang');ve(DL);};});
   q('[data-lui]').forEach(function(b){b.onclick=function(){var m=b.getAttribute('data-lui');if(!confirm('Lùi '+m+' về bước trước? Thợ cũ giữ lại việc, khoán vừa tính được mở lại.'))return;chay('webLuiBuoc',[KHOA,m],function(k){bao('↩ '+(k.maHien||m)+' về '+(k.den||'bước trước')+(k.nguoi?' · '+k.nguoi:''));});};});
   q('[data-xongtho]').forEach(function(c){c.onclick=function(){XONG_THO=c.getAttribute('data-xongtho');ve(DL);};});
+  q('[data-nsmo]').forEach(function(c){c.onclick=function(){MO_NS[c.getAttribute('data-nsmo')]=c.getAttribute('data-nsht')!=='1';ve(DL);};});
   q('[data-ns]').forEach(function(b){b.onclick=function(){hopNS(b.getAttribute('data-ns'),b.getAttribute('data-ma'),b.getAttribute('data-ten'),b.getAttribute('data-vt')||b.getAttribute('data-dl'));};});
   q('[data-ghikien]').forEach(function(b){b.onclick=function(){hopGhiKien(b.getAttribute('data-ghikien'));};});
   q('[data-xongviec]').forEach(function(b){b.onclick=function(){var m=b.getAttribute('data-xongviec');if(!confirm('Báo xong việc này? Đơn sẽ sang bước sau ngay.'))return;chay('webXongViec',[KHOA,m],function(k){bao('✅ Đã xong '+(k.maHien||m)+' → '+(k.den||''));});};});
