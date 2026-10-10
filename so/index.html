@@ -93,9 +93,13 @@ function tien(n) { n = Math.round(Number(n) || 0); return n.toLocaleString('vi-V
 function soTuChu(s) { return Number(String(s || '').replace(/[^\d]/g, '')) || 0; }
 var NHC = null; // 09/10: khoản BIDV chưa ghi đang được ghi từ trang Sổ
 function soNhap() { return D.che === 'ghi' ? (D.nhap.soTien || 0) : (NHC ? NHC.soTien : 0); }
+function phuDau() {
+  if (D.dangTai) return '⏳ Đang đọc màn hình chuyển khoản… anh cứ chọn trước';
+  return D.che === 'ghi' ? ((D.nhap.gio || '') + ' ' + (D.nhap.ngay || '') + (D.nguoi ? ' → ' + D.nguoi : (D.nhap.maGD ? ' · ' + D.nhap.maGD : ''))) : NHC ? ('🏦 BIDV ' + NHC.gio + ' ' + NHC.ngay + ' → ' + NHC.nguoi) : 'Ghi tay (không có ảnh)';
+}
 function dau(khongDuong) {
   var so = soTuChu(C.soTien) || soNhap();
-  var phu = D.che === 'ghi' ? ((D.nhap.gio || '') + ' ' + (D.nhap.ngay || '') + (D.nguoi ? ' → ' + D.nguoi : (D.nhap.maGD ? ' · ' + D.nhap.maGD : ''))) : NHC ? ('🏦 BIDV ' + NHC.gio + ' ' + NHC.ngay + ' → ' + NHC.nguoi) : 'Ghi tay (không có ảnh)';
+  var phu = phuDau();
   return '<div class="dau"><div class="so">' + (so ? tien(so) : '— đ') + '</div><div class="phu">' + esc(phu) + '</div></div>' + (khongDuong ? '' : duong());
 }
 function ve(html) { $('app').innerHTML = html; window.scrollTo(0, 0); }
@@ -129,7 +133,7 @@ function manDonVi() {
   C.donVi = C.loai = C.ma = C.ten = C.loaiTien = C.danhMuc = '';
   var h = dau();
   if (D.trung) h += '<div class="canh do">⚠️ Mã giao dịch này <b>đã ghi</b> ở <b>#' + ('0000' + D.trung.stt).slice(-4) + '</b> (' + esc(D.trung.ngay) + ', ' + tien(D.trung.soTien) + ', ' + esc(D.trung.donVi) + ' · ' + esc(D.trung.loai) + '). Nếu gõ lưng máy hai lần thì bấm <b>Không ghi</b>.</div>';
-  if (D.che === 'ghi' && !D.nhap.soTien) h += '<div class="canh">Máy chưa đọc được số tiền trên màn hình — bước cuối anh gõ số giúp em.</div>';
+  if (D.che === 'ghi' && !D.nhap.soTien && !D.dangTai) h += '<div class="canh">Máy chưa đọc được số tiền trên màn hình — bước cuối anh gõ số giúp em.</div>';
   if (D.goiY && DS.donVi[D.goiY.donVi]) h += '<div class="hoi">Lần trước chuyển cho người này</div><div class="nhom">' + hang({ ic: '⚡', mau: '#fff3cd', ten: 'Ghi giống lần trước', mo: esc(moTaGoiY(D.goiY)), onclick: 'dungGoiY()' }) + '</div>';
   h += '<div class="hoi">Khoản chi này cho đâu?</div><div class="nhom">'
     + hang({ ic: '👤', mau: MAU_DV.ca_nhan, ten: '1 · Cá nhân', mo: 'chỉ lưu ở sổ tổng', onclick: "chonDonVi('ca_nhan')" })
@@ -258,6 +262,7 @@ function ghi(boQuaTrung) {
   if (C.loai === 'luong' && !C.thang) { alert('Chọn tháng lương'); return; }
   var b = $('nutGhi'); b.disabled = true; b.textContent = 'Đang ghi…';
   var chon = JSON.parse(JSON.stringify(C)); chon.boQuaTrung = !!boQuaTrung;
+  if (D.dangTai) { b.textContent = 'Đang đọc màn hình…'; D.choGhi = function () { ghi(boQuaTrung); }; return; } // 10/10: bấm Ghi trước khi đọc xong → tự ghi ngay khi xong
   var r = google.script.run.withSuccessHandler(xong).withFailureHandler(function (e) {
     b.disabled = false; b.textContent = 'Ghi vào sổ';
     var m = String(e && e.message || e);
@@ -372,8 +377,23 @@ function huy(stt) {
 
 if (D.che === 'ghi') di(manDonVi); else di(manSo);
 // 10/10: phần phụ tải ngầm sau khi trang đã hiện — không bắt anh chờ
-if (D.che === 'ghi' && D.nhap.maGD && D.trung === undefined)
-  google.script.run.withSuccessHandler(function (t) { D.trung = t; if (t && buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi(); }).withFailureHandler(function () { }).kiemTrung(D.nhap.id, D.nhap.the);
+function kiemTrungNgam() {
+  if (D.che === 'ghi' && !D.dangTai && D.nhap.maGD && D.trung === undefined)
+    google.script.run.withSuccessHandler(function (t) { D.trung = t; if (t && buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi(); }).withFailureHandler(function () { }).kiemTrung(D.nhap.id, D.nhap.the);
+}
+kiemTrungNgam();
+/** Bản GitHub: trang hiện ngay bằng danh sách nhớ trong máy, số tiền / giờ / mã tới sau → điền vào chỗ đang xem. */
+function capNhatSauTai() {
+  D.dangTai = false;
+  var s = document.querySelector('.dau .so'), p = document.querySelector('.dau .phu'), n = soTuChu(C.soTien) || soNhap();
+  if (s) s.textContent = n ? tien(n) : '— đ';
+  if (p) p.textContent = phuDau();
+  var o = $('soTien');
+  if (o && !soTuChu(o.value) && soNhap()) { C.soTien = String(soNhap()); o.value = soNhap().toLocaleString('vi-VN').replace(/,/g, '.'); }
+  if (buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi();
+  kiemTrungNgam();
+  if (D.choGhi) { var f = D.choGhi; D.choGhi = null; f(); }
+}
 if (D.che === 'so' && D.chuaGhi === undefined)
   google.script.run.withSuccessHandler(function (r) { D.chuaGhi = r || []; var v = $('vungChuaGhi'); if (v) v.innerHTML = veChuaGhi(); }).withFailureHandler(function () { }).chuaGhiNH(D.k);
 </script>
@@ -404,13 +424,26 @@ window.D = null;
 // 10/10: danh sách chọn (NCC, thợ, danh mục…) nhớ trong máy — máy chủ chỉ gửi lại khi có thay đổi
 var dsMay = null; try { dsMay = JSON.parse(localStorage.getItem('so_ds') || 'null'); } catch (e) { }
 var tsGoi = thamSo(); if (dsMay && dsMay.h) tsGoi.dsH = dsMay.h;
+function chayTrang() { var s = document.createElement('script'); s.text = document.getElementById('maTrang').textContent; document.body.appendChild(s); }
+// 10/10: gõ lưng (moi=1 / m=) + máy đã nhớ danh sách → hiện màn chọn NGAY, không chờ Google (~1–2 giây); số tiền điền vào khi tới
+var veTruoc = !!((tsGoi.moi || tsGoi.m) && !tsGoi.n && dsMay && dsMay.ds);
+if (veTruoc) {
+  window.D = { che: 'ghi', dangTai: true, nhap: { id: '', the: '', soTien: 0, maGD: '', ngay: '', gio: '', coAnh: false, nh: '' }, nguoi: '', goiY: null, soUrl: '', ds: dsMay.ds, dsH: dsMay.h };
+  chayTrang();
+}
 window.__goiApi('duLieuTrang', [tsGoi]).then(function (r) {
   if (!r || r.loi) return baoLoiTrang(r ? r.loi : 'Không lấy được dữ liệu');
   if (r.d.ds) { try { localStorage.setItem('so_ds', JSON.stringify({ h: r.d.dsH, ds: r.d.ds })); } catch (e) { } }
   else if (dsMay && dsMay.h === r.d.dsH) r.d.ds = dsMay.ds;
   else { try { localStorage.removeItem('so_ds'); } catch (e) { } return location.reload(); }
+  if (veTruoc && window.D && window.D.dangTai && r.d.che === 'ghi') {
+    var cu = window.D;
+    ['nhap', 'nguoi', 'goiY', 'soUrl', 'dsH'].forEach(function (k) { if (k in r.d) cu[k] = r.d[k]; });
+    if (r.d.ds !== dsMay.ds) { cu.ds = r.d.ds; window.DS = r.d.ds; }
+    return window.capNhatSauTai();
+  }
   window.D = r.d;
-  var s = document.createElement('script'); s.text = document.getElementById('maTrang').textContent; document.body.appendChild(s);
+  chayTrang();
 }, function (e) { baoLoiTrang('Mạng chậm hoặc máy chủ lỗi: ' + e.message); });
 </script>
 </body></html>
