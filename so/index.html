@@ -285,7 +285,7 @@ function xong(kq) {
 function manSo() {
   var t = (D.tong || [])[0], h = '<div class="dau"><div class="so" style="font-size:26px">📒 Sổ chi</div><div class="phu">' + (t ? 'Tháng ' + t.thang + ' · ' + t.soKhoan + ' khoản' : 'Chưa có khoản nào') + '</div></div>';
   if (t && THE === 'gan') h += '<div class="the4"><div>☕ Quán · chi phí<b>' + tien(t.quanChiPhi) + '</b>' + (t.quanChuyenQuy ? '+ cấp quỹ ' + tien(t.quanChuyenQuy) : '') + '</div><div>🪵 Xưởng<b>' + tien(t.xuong) + '</b></div><div>👤 Cá nhân<b>' + tien(t.caNhan) + '</b></div><div>Tổng tiền ra<b>' + tien(t.quanChiPhi + t.quanChuyenQuy + t.xuong + t.caNhan) + '</b></div></div>';
-  h += veChuaGhi();
+  h += '<div id="vungChuaGhi">' + veChuaGhi() + '</div>';
   h += '<button class="nut" onclick="NHC=null;C.soTien=\'\';buoc=[manSo];di(manDonVi)">+ Ghi tay một khoản</button>'
     + '<div class="tabs"><div class="tab' + (THE === 'gan' ? ' chon' : '') + '" onclick="THE=\'gan\';manSo()">Gần đây</div><div class="tab' + (THE === 'bc' ? ' chon' : '') + '" onclick="THE=\'bc\';manSo()">📊 Báo cáo chi</div></div><div id="noiDung"></div>';
   ve(h);
@@ -371,6 +371,11 @@ function huy(stt) {
 }
 
 if (D.che === 'ghi') di(manDonVi); else di(manSo);
+// 10/10: phần phụ tải ngầm sau khi trang đã hiện — không bắt anh chờ
+if (D.che === 'ghi' && D.nhap.maGD && D.trung === undefined)
+  google.script.run.withSuccessHandler(function (t) { D.trung = t; if (t && buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi(); }).withFailureHandler(function () { }).kiemTrung(D.nhap.id, D.nhap.the);
+if (D.che === 'so' && D.chuaGhi === undefined)
+  google.script.run.withSuccessHandler(function (r) { D.chuaGhi = r || []; var v = $('vungChuaGhi'); if (v) v.innerHTML = veChuaGhi(); }).withFailureHandler(function () { }).chuaGhiNH(D.k);
 </script>
 <script>
 var API_URL = "https://script.google.com/macros/s/AKfycbwTKkq4vJ_AjLCJNZQExMJK0M53H8i0LDlvz8IJkhkU__yE-gOm3_uhhFV2MoQ83jJe/exec";
@@ -385,7 +390,7 @@ var API_URL = "https://script.google.com/macros/s/AKfycbwTKkq4vJ_AjLCJNZQExMJK0M
     var s = null, f = null, p = {};
     p.withSuccessHandler = function (x) { s = x; return p; };
     p.withFailureHandler = function (x) { f = x; return p; };
-    ["boQuaNH","trangGhi","trangGhiNH","trangGhiTay","boQuaNHSo","baoCaoChi","trangHuy"].forEach(function (fn) {
+    ["boQuaNH","trangGhi","trangGhiNH","trangGhiTay","boQuaNHSo","baoCaoChi","trangHuy","kiemTrung","chuaGhiNH"].forEach(function (fn) {
       p[fn] = function () { var a = Array.prototype.slice.call(arguments);
         goi(fn, a).then(function (v) { if (s) s(v); }, function (e) { if (f) f(e); else alert(e.message); }); };
     });
@@ -396,8 +401,14 @@ var API_URL = "https://script.google.com/macros/s/AKfycbwTKkq4vJ_AjLCJNZQExMJK0M
 function thamSo() { var q = {}; location.search.replace(/^\?/, '').split('&').forEach(function (x) { if (!x) return; var k = x.split('='); q[decodeURIComponent(k[0])] = decodeURIComponent((k[1] || '').replace(/\+/g, ' ')); }); return q; }
 function baoLoiTrang(s) { document.getElementById('app').innerHTML = '<div class="tai"><div style="font-size:44px">📒</div><p>' + String(s).replace(/[<>&]/g, '') + '</p><button class="nut phu" onclick="location.reload()">Thử lại</button></div>'; }
 window.D = null;
-window.__goiApi('duLieuTrang', [thamSo()]).then(function (r) {
+// 10/10: danh sách chọn (NCC, thợ, danh mục…) nhớ trong máy — máy chủ chỉ gửi lại khi có thay đổi
+var dsMay = null; try { dsMay = JSON.parse(localStorage.getItem('so_ds') || 'null'); } catch (e) { }
+var tsGoi = thamSo(); if (dsMay && dsMay.h) tsGoi.dsH = dsMay.h;
+window.__goiApi('duLieuTrang', [tsGoi]).then(function (r) {
   if (!r || r.loi) return baoLoiTrang(r ? r.loi : 'Không lấy được dữ liệu');
+  if (r.d.ds) { try { localStorage.setItem('so_ds', JSON.stringify({ h: r.d.dsH, ds: r.d.ds })); } catch (e) { } }
+  else if (dsMay && dsMay.h === r.d.dsH) r.d.ds = dsMay.ds;
+  else { try { localStorage.removeItem('so_ds'); } catch (e) { } return location.reload(); }
   window.D = r.d;
   var s = document.createElement('script'); s.text = document.getElementById('maTrang').textContent; document.body.appendChild(s);
 }, function (e) { baoLoiTrang('Mạng chậm hoặc máy chủ lỗi: ' + e.message); });
