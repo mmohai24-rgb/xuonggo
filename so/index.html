@@ -154,6 +154,7 @@ function dungGoiY() {
 }
 function khongGhi() {
   var nh = D.nhap && D.nhap.nh;
+  if (D.nhanh) return ve('<div class="xong"><div class="tron" style="background:#8e8e93">✕</div><h2>Không ghi</h2><p>Khoản này không vào sổ. Anh vuốt về là xong.</p></div>' + nutSo());
   if (nh) google.script.run.withFailureHandler(function () { }).boQuaNH(D.nhap.id, D.nhap.the); // phiếu từ email BIDV → bot không nhắc nữa
   ve('<div class="xong"><div class="tron" style="background:#8e8e93">✕</div><h2>Không ghi</h2><p>' + (nh ? 'Đã đánh dấu <b>không phải khoản chi</b> — bot không nhắc khoản này nữa.' : 'Khoản này không vào sổ. Anh vuốt về là xong.') + '</p></div>' + nutSo());
 }
@@ -272,7 +273,8 @@ function ghi(boQuaTrung) {
     }
     alert('Chưa ghi được: ' + m);
   });
-  if (D.che === 'ghi') r.trangGhi(D.nhap.id, D.nhap.the, chon); else if (NHC) r.trangGhiNH(D.k, NHC.ma, chon); else r.trangGhiTay(D.k, chon);
+  if (D.nhanh) r.ghiTuChu(D.k, { soTien: D.nhap.soTien, maGD: D.nhap.maGD, ngay: D.nhap.ngay, gio: D.nhap.gio, chu: D.chu || '' }, chon);
+  else if (D.che === 'ghi') r.trangGhi(D.nhap.id, D.nhap.the, chon); else if (NHC) r.trangGhiNH(D.k, NHC.ma, chon); else r.trangGhiTay(D.k, chon);
 }
 function xong(kq) {
   var tron = kq.app === 'cho' ? 'cho' : kq.app === 'loi' ? 'loi' : '', icon = kq.app === 'cho' ? '⏳' : kq.app === 'loi' ? '!' : '✓';
@@ -378,8 +380,8 @@ function huy(stt) {
 if (D.che === 'ghi') di(manDonVi); else di(manSo);
 // 10/10: phần phụ tải ngầm sau khi trang đã hiện — không bắt anh chờ
 function kiemTrungNgam() {
-  if (D.che === 'ghi' && !D.dangTai && D.nhap.maGD && D.trung === undefined)
-    google.script.run.withSuccessHandler(function (t) { D.trung = t; if (t && buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi(); }).withFailureHandler(function () { }).kiemTrung(D.nhap.id, D.nhap.the);
+  if (D.nhanh || D.dangTai || D.che !== 'ghi' || !D.nhap.maGD || D.trung !== undefined) return;
+  google.script.run.withSuccessHandler(function (t) { D.trung = t; if (t && buoc[buoc.length - 1] === manDonVi && !C.donVi) manDonVi(); }).withFailureHandler(function () { }).kiemTrung(D.nhap.id, D.nhap.the);
 }
 kiemTrungNgam();
 /** Bản GitHub: trang hiện ngay bằng danh sách nhớ trong máy, số tiền / giờ / mã tới sau → điền vào chỗ đang xem. */
@@ -410,7 +412,7 @@ var API_URL = "https://script.google.com/macros/s/AKfycbwTKkq4vJ_AjLCJNZQExMJK0M
     var s = null, f = null, p = {};
     p.withSuccessHandler = function (x) { s = x; return p; };
     p.withFailureHandler = function (x) { f = x; return p; };
-    ["boQuaNH","trangGhi","trangGhiNH","trangGhiTay","boQuaNHSo","baoCaoChi","trangHuy","kiemTrung","chuaGhiNH"].forEach(function (fn) {
+    ["boQuaNH","ghiTuChu","trangGhi","trangGhiNH","trangGhiTay","boQuaNHSo","baoCaoChi","trangHuy","kiemTrung","chuaGhiNH"].forEach(function (fn) {
       p[fn] = function () { var a = Array.prototype.slice.call(arguments);
         goi(fn, a).then(function (v) { if (s) s(v); }, function (e) { if (f) f(e); else alert(e.message); }); };
     });
@@ -422,9 +424,104 @@ function thamSo() { var q = {}; location.search.replace(/^\?/, '').split('&').fo
 function baoLoiTrang(s) { document.getElementById('app').innerHTML = '<div class="tai"><div style="font-size:44px">📒</div><p>' + String(s).replace(/[<>&]/g, '') + '</p><button class="nut phu" onclick="location.reload()">Thử lại</button></div>'; }
 window.D = null;
 // 10/10: danh sách chọn (NCC, thợ, danh mục…) nhớ trong máy — máy chủ chỉ gửi lại khi có thay đổi
+function tachSoTienCK_(van) {
+  var dong = String(van || '').replace(/\r/g, '').split('\n').map(function (x) { return x.trim(); }).filter(String);
+  var ung = [];
+  // 08/10: so khớp chữ KHÔNG dấu — máy đọc BIDV ra "Giao dich thänh công", "Miën phí", "UND" (thay VND)
+  var kd = function (s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/mien phi/g, ' '); };
+  var docSo = function (s) { // "1.250.000" / "1,250,000" / "1 250 000" / "250000"
+    var t = String(s).replace(/[^\d.,\s]/g, '').trim();
+    if (/^\d{1,3}([.,\s]\d{3})+$/.test(t)) return Number(t.replace(/[.,\s]/g, ''));
+    if (/^\d{1,3}([.,]\d{3})+[.,]\d{1,2}$/.test(t)) return Number(t.replace(/[.,]\d{1,2}$/, '').replace(/[.,]/g, '')); // 250,000.00
+    if (/^\d{4,9}$/.test(t)) return Number(t);
+    return 0;
+  };
+  var DV = 'VND|VNĐ|VNÐ|UND|VNO|VN0|vnd|vnđ|đ|₫|đồng|d';
+  var reSo = new RegExp('([+\\-−]?\\s?\\d{1,3}(?:[.,\\s]\\d{3})+(?:[.,]\\d{1,2})?|\\d{4,12})(\\s*(?:' + DV + ')\\b)?', 'g');
+  dong.forEach(function (d, i) {
+    // máy đọc hay gộp "10,000 VND 08/10/2026 22:32:53" thành 1 dòng → bỏ phần ngày/giờ rồi mới đọc số (trước đây bỏ cả dòng)
+    d = d.replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, ' ').replace(/\d{1,2}\/\d{1,2}\/\d{2}\b/g, ' ').replace(/\b\d{1,2}[:h]\d{2}(?::\d{2})?\b/g, ' ')
+      .replace(/(\d[.,]?)[Oo](?=[\dOo.,]*(?:\s|$|V|U|đ|₫))/g, '$10').replace(/(\d[.,]?)[Oo](?=[\dOo.,]*(?:\s|$|V|U|đ|₫))/g, '$10').trim(); // chữ O đọc nhầm thay số 0
+    if (!d) return;
+    var k = kd(d), kTruoc = i > 0 ? kd(dong[i - 1]) : '';
+    if (/so du|balance|\bphi\b|fee|ma giao dich|ma gd|reference|so tham chieu|so tai khoan|\bstk\b|tai khoan|account|hotline|\bngay\b|\bgio\b/.test(k) && !/so tien|amount/.test(k)) return;
+    var m; reSo.lastIndex = 0;
+    while ((m = reSo.exec(d))) {
+      var so = docSo(m[1]);
+      if (!so || so < 1000 || so > 2000000000) continue;
+      var coDV = !!m[2] || /(VND|VNĐ|UND|₫)\s*[\-−+]?\s*$/i.test(d.slice(0, m.index)), coDau = /\d[.,\s]\d{3}/.test(m[1]);
+      if (!coDV && !coDau) continue; // số trơn không đơn vị: thường là số tài khoản / mã
+      var diem = (coDV ? 3 : 0) + (coDau ? 1 : 0) + (/^[\-−]/.test(m[1].trim()) ? 1 : 0);
+      if (/so tien|amount|thanh cong/.test(k + ' ' + kTruoc)) diem += 4;
+      if (/so du|balance|\bphi\b|fee/.test(kTruoc)) diem -= 5;
+      if (new RegExp('^\\s*[\\-−+]?\\s*[\\d.,\\s]+\\s*(' + DV + ')?\\s*$').test(d)) diem += 1; // dòng chỉ có số tiền (số to ở đầu màn hình)
+      ung.push({ so: so, diem: diem, vt: i });
+    }
+  });
+  ung.sort(function (a, b) { return b.diem - a.diem || a.vt - b.vt; });
+  var cac = []; ung.forEach(function (u) { if (cac.indexOf(u.so) < 0) cac.push(u.so); });
+  return { soTien: ung.length && ung[0].diem >= 3 ? ung[0].so : 0, cacSo: cac.slice(0, 5) };
+}
+
+function tachMaGD(chu) {
+  var t = String(chu || '');
+  var m = t.match(/\b(FT\d{8,20})\b/i);
+  if (m) return m[1].toUpperCase();
+  m = t.match(/\b(\d{3,6}BIDV[A-Z0-9]{4,20})\b/i); // BIDV: "6281BIDVE2PFKMJ3"
+  if (m) return m[1].toUpperCase();
+  var dong = t.replace(/\r/g, '').split('\n').map(function (x) { return x.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }); // bỏ dấu: máy đọc "chiêu", "chiëu"
+  for (var i = 0; i < dong.length; i++) {
+    if (/m[aã] giao d[iị]ch|m[aã] gd|s[oố] tham chi[eế]u|m[aã] tham chi[eế]u|reference|transaction id|trace/i.test(dong[i])) {
+      var con = dong[i].replace(/^.*?(m[aã] giao d[iị]ch|m[aã] gd|s[oố] tham chi[eế]u|m[aã] tham chi[eế]u|reference|transaction id|trace)\s*:?\s*/i, '').trim();
+      var c = (con.length >= 6 ? con : (dong[i + 1] || '')).replace(/\s/g, '');
+      if (/^[A-Z0-9.\-]{6,30}$/i.test(c) && /\d{4}/.test(c)) return c.toUpperCase();
+    }
+  }
+  return '';
+}
+
+function tachNgayGio(chu) {
+  var t = String(chu || ''), d = t.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  // Techcombank mới: "7 thg 10, 2026 lúc 19:02" (giờ đứng sau ngày; giờ ở thanh trạng thái đầu màn hình bỏ qua)
+  if (!d) d = t.match(/(\d{1,2})\s*(?:thg|tháng|th)\s*(\d{1,2}),?\s*(\d{4})/i);
+  if (!d || +d[2] < 1 || +d[2] > 12 || +d[1] < 1 || +d[1] > 31) return null;
+  var quanh = t.slice(Math.max(0, d.index - 12), d.index + d[0].length + 20);
+  var g = quanh.match(/(\d{1,2}):(\d{2})(?::\d{2})?/) || t.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+  return { ngay: ('0' + d[1]).slice(-2) + '/' + ('0' + d[2]).slice(-2) + '/' + d[3], gio: g ? ('0' + g[1]).slice(-2) + ':' + g[2] : '' };
+}
+
+function thamSoBam() { var q = {}; String(location.hash || '').replace(/^#/, '').split('&').forEach(function (x) { if (!x) return; var k = x.split('='); q[decodeURIComponent(k[0])] = decodeURIComponent((k.slice(1).join('=') || '').replace(/\+/g, ' ')); }); return q; }
+function hai(n) { return ('0' + n).slice(-2); }
 var dsMay = null; try { dsMay = JSON.parse(localStorage.getItem('so_ds') || 'null'); } catch (e) { }
 var tsGoi = thamSo(); if (dsMay && dsMay.h) tsGoi.dsH = dsMay.h;
 function chayTrang() { var s = document.createElement('script'); s.text = document.getElementById('maTrang').textContent; document.body.appendChild(s); }
+// ---- bản nhanh: Phím tắt truyền thẳng chữ iPhone đã đọc (#chu=…) → dựng phiếu ngay, KHÔNG gọi Google lúc mở ----
+var bam = thamSoBam();
+if (bam.chu && bam.k) {
+  var cN = String(bam.chu).slice(0, 6000), ngN = tachNgayGio(cN), nay = new Date();
+  var nhapN = { id: '', the: '', soTien: (tachSoTienCK_(cN) || {}).soTien || 0, maGD: tachMaGD(cN),
+    ngay: ngN ? ngN.ngay : hai(nay.getDate()) + '/' + hai(nay.getMonth() + 1) + '/' + nay.getFullYear(),
+    gio: ngN && ngN.gio ? ngN.gio : hai(nay.getHours()) + ':' + hai(nay.getMinutes()), coAnh: false, nh: '' };
+  var veNhanh = function (ds, h) {
+    window.D = { che: 'ghi', nhanh: true, k: bam.k, chu: cN, nhap: nhapN, nguoi: '', goiY: null, ds: ds, dsH: h,
+      soUrl: location.pathname + '?k=' + encodeURIComponent(bam.k) };
+    chayTrang();
+  };
+  if (dsMay && dsMay.ds) {
+    veNhanh(dsMay.ds, dsMay.h);
+    window.__goiApi('layDs', [bam.k, dsMay.h]).then(function (r) { // làm mới danh sách ngầm cho lần sau
+      if (r && r.ds) { try { localStorage.setItem('so_ds', JSON.stringify({ h: r.dsH, ds: r.ds })); } catch (e) { } }
+    }, function () { });
+  } else {
+    var oT = document.getElementById('dangTai'); if (oT) oT.innerHTML = '📒<br>Lần đầu — đang lấy danh sách…';
+    window.__goiApi('layDs', [bam.k, '']).then(function (r) {
+      try { localStorage.setItem('so_ds', JSON.stringify({ h: r.dsH, ds: r.ds })); } catch (e) { }
+      veNhanh(r.ds, r.dsH);
+    }, function (e) { baoLoiTrang('Lần đầu cần mạng để lấy danh sách: ' + e.message); });
+  }
+  throw 'xong'; // dừng hẳn nhánh cũ
+}
+
 // 10/10: gõ lưng (moi=1 / m=) + máy đã nhớ danh sách → hiện màn chọn NGAY, không chờ Google (~1–2 giây); số tiền điền vào khi tới
 var veTruoc = !!((tsGoi.moi || tsGoi.m) && !tsGoi.n && dsMay && dsMay.ds);
 if (veTruoc) {
