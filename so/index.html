@@ -82,7 +82,7 @@ body{font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;background:var
 .ghichu{font-size:13px;color:var(--mo);text-align:center;margin-top:18px;line-height:1.5}
 </style></head>
 <body>
-<div id="app"><div class="tai" style="text-align:center;padding:60px 20px;color:#888">📒<br>Đang tải…</div></div>
+<div id="app"><div class="tai" id="dangTai" style="text-align:center;padding:60px 20px;color:#888">📒<br>Đang tải…</div></div>
 <script type="text/plain" id="maTrang">
 var D = window.D;
 var DS = D.ds, C = { donVi: '', loai: '', ma: '', ten: '', loaiTien: '', thang: '', danhMuc: '', soTien: '', ghiChu: '' };
@@ -433,7 +433,7 @@ if (veTruoc) {
 }
 // 10/10: Phím tắt mở trang TRƯỚC rồi mới gửi ảnh → trang hỏi máy chủ tới khi phiếu tới (tối đa ~25 giây)
 var lucMo = Date.now(), goiPhieu = 0;
-if (tsGoi.moi && !tsGoi.n) tsGoi.cho = 1;
+if (tsGoi.moi && !tsGoi.n) { tsGoi.cho = 1; var oTai = document.getElementById('dangTai'); if (oTai) oTai.innerHTML = '📒<br>Đang đọc màn hình chuyển khoản…'; }
 function layDuLieu() { return window.__goiApi('duLieuTrang', [tsGoi]).then(function (r) {
   if (r && r.choPhieu) {
     if (Date.now() - lucMo > 25000) return { loi: 'Chưa nhận được màn hình chuyển khoản (Phím tắt chưa gửi lên hoặc mạng chậm). Gõ lưng máy lần nữa, hoặc mở Sổ → Ghi tay.' };
