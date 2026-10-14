@@ -353,6 +353,21 @@ body.chua-dn .boc,body.chua-dn #fab{display:none}
 .vgly{font-size:13px;color:var(--cam);background:var(--camnen);border-radius:8px;padding:5px 9px;margin-top:6px}
 .vgqh.cam{color:var(--cam)}
 .hang.vt .vtnut .vgbd{flex:0 0 auto;padding:9px 10px;font-size:14px;margin:0}.hang.vt .vtnut .vgvg{flex:0 0 44px;padding:9px 0;font-size:16px;margin:0;text-align:center}
+/* 13/10 (C-043): 📋 Thứ tự hôm nay */
+.ttds{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.ttdong{display:flex;gap:10px;background:var(--the);border:1px solid var(--vien);border-radius:12px;padding:8px 10px}
+.ttdong.dau{border:2px solid var(--nhan);padding:10px 12px}
+.ttdong.do .ttso{background:var(--donen);color:var(--do)}
+.ttso{flex:0 0 30px;height:30px;border-radius:99px;background:var(--cxn);color:var(--chu);font-weight:700;display:flex;align-items:center;justify-content:center}
+.ttdong.dau .ttso{background:var(--nhan);color:#fff}
+.ttthan{flex:1;min-width:0}.ttthan .vtt{font-weight:600;line-height:1.35}.ttthan .vtdon{display:block;font-size:12.5px;color:var(--mo);margin-top:2px}
+.ttthan .vtnhom{float:right;font-size:11px;font-weight:700;background:var(--timnen);color:var(--tim);padding:1px 8px;border-radius:99px;margin-left:8px}
+.ttnut{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.ttnut .nn{margin:0}.ttnut .vtchinh{flex:1;padding:9px 10px;font-size:14px;font-weight:700}
+/* 14/10 (C-043 B): nhãn mức */
+.muc{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid var(--vien);background:var(--cxn);color:var(--mo);cursor:pointer;font-family:inherit}
+.muc.gap{background:var(--donen);color:var(--do);border-color:transparent}.muc.sau{background:var(--the);color:var(--mo);border-style:dashed}
+.muc.khoa{cursor:default}
+.ttdong.m-sau{opacity:.75}.ttsau{width:100%;margin:2px 0 0;font-size:13px}
 </style>
 <div class="boc">
 <header>
@@ -423,6 +438,8 @@ function vienCD(tt){var m=MAU_CD[tt]||['--vien','--mo'];
   return '<span class="vien" style="background:var('+m[0]+');color:var('+m[1]+')">'+(ICON_CD[tt]||'')+' '+esc(tt)+'</span>';}
 var HAN_VG='';   // 13/10 (C-039): hạn đang chọn ở ô ghi việc của tổ trưởng
 var GIAO_VT='';   // 13/10 (C-039): người được giao ở ô ghi việc của anh ('' = tự làm)
+var TT_AI='';   // 13/10 (C-043): danh sách thứ tự đang xem ở bảng anh ('' = của anh, 'NV01' = của Dũng)
+var MUC_VT='thuong',MUC_VG='thuong',MO_SAU_VT=false,MO_SAU_VG=false;   // 14/10 (C-043 B): mức khi ghi việc · mở nhóm 💤 Để sau
 // ===== khung chung =====
 function oSo(so,ten,lop,db){return '<div class="o '+(lop||'')+(db?' bam'+(locDB===db?' chon':''):'')+'"'+(db?' data-db="'+db+'"':'')+'><div class="so">'+so+'</div><div class="ten">'+ten+'</div></div>';}
 function bao(t,loi){var e=document.createElement('div');e.className='bao'+(loi?' loi':'');e.textContent=t;
@@ -451,6 +468,7 @@ function nhanYC(ma){var y=ycCua(ma);if(!y.length)return '';
 function dongYC(ma){var y=ycCua(ma);if(!y.length)return '';
   return '<div class="meta">'+y.slice(0,4).map(function(x){return '<span'+(x.conLai!==null&&x.conLai<0?' style="color:var(--do)"':'')+'>🔧 '+esc(String(x.noiDung).slice(0,70))+(x.tenGiao?' · 👷 '+esc(x.tenGiao):' · chưa giao')+'</span>';}).join('')+(y.length>4?'<span>… còn '+(y.length-4)+'</span>':'')+'</div>';}
 var PHIEN_BAN=[
+  ['86','14/10/2026','📋 Thứ tự việc theo mức: khi ghi / giao việc chọn 🔥 Gấp · Thường · 💤 Để sau — máy tự xếp số 1, 2, 3: Gấp anh đặt → đơn trễ (Gấp tự động) → Thường → Để sau, cùng mức thì việc tới hạn trước; bấm nhãn mức để đổi · Việc của tôi có chip Của tôi / Của Dũng để anh đặt mức cho Dũng · màn Dũng → Điều phối: danh sách đánh số gồm bước đơn Dũng đang giữ + việc giao, việc số 1 có nút làm luôn; Dũng không hạ được việc anh đánh Gấp · giao việc Gấp thì tin Telegram có 🔥 GẤP · tin "Bỏ", "ok"… nhắn bot không còn bị ghi thành việc'],
   ['84','13/10/2026','📝 Việc giao cho tổ trưởng: anh ghi việc chọn luôn "Giao cho" (một lần bấm, người được giao nhận tin) · màn Dũng → Điều phối có khối 📝 Việc của Dũng: tự ghi việc, ▶ Bắt đầu, ✅ Xong, ⛔ Đang vướng (chọn lý do, anh nhận tin), ✕ Bỏ; quá hạn đỏ trên cùng · tin 7:30 của Dũng và tổng kết 20:00 của anh có việc quá hạn / đang vướng'],
   ['83','11/10/2026','💰 Lương của tôi: thợ và tổ trưởng có tab riêng xem tiền của chính mình (còn được nhận, phiếu tháng, công × lương ngày, điểm danh, ứng / thanh toán, các tháng) · cuối tab Việc có ✅ Đã làm tháng này kèm tiền · anh: tab Nhân sự → 💰 Bảng công theo tháng (lịch điểm danh, đã làm có STT) · Đối soát: nhãn + lọc theo cột TÌNH TRẠNG THANH TOÁN của file đối tác (📄 báo đã TT 100%, ⚠️ lệch) — chỉ nhãn, không tự ghi tiền'],
   ['82.1','10/10/2026','👁 Che giá tiền: mở bảng là mọi số tiền mờ đi (thẻ đơn, ô Tiền, Đối soát, Đơn tự nhập, Nhân sự, Thu chi, dòng Giá ở Thay đổi) — bấm 👁 trên đầu trang hoặc bấm vào số mờ là hiện hết, tự che lại sau 1 phút, khi chuyển app / tắt màn hình, khi mở lại bảng; bấm 🙈 để che ngay · trong hộp sửa tiền (💳, 💰, Bảng công) vẫn hiện số · chỉ đổi trang, máy chủ giữ bản 82'],
@@ -1175,6 +1193,7 @@ function theRiengGiao(v){
 function veVT(){
   var v=DL.viec,o=[];
   if(!v)return '<div class="trong">Chưa có dữ liệu việc. Bấm ↻ để tải lại.</div>';
+  o.push(khoiThuTu(v));   // 13/10 (C-043): 📋 Thứ tự hôm nay — trên cùng
   o.push('<div class="luoi vtkpi">'+oKPI(v.tong.homNay,'Cần xử lý hôm nay',v.tong.homNay?'sap':'','homnay')+oKPI(v.tong.quaHan,'Quá hạn',v.tong.quaHan?'canhbao':'','quahan')+oKPI(v.tong.daGiao,'Đã giao, chờ xong','','dagiao')+oKPI(v.tong.rieng,'Việc riêng còn mở','tim','rieng')+'</div>');
   var K=locKPI, loc=function(ds){return K==='quahan'?ds.filter(quaHanVT):K==='homnay'?ds.filter(toiHanVT):ds;};
   var TEN_LOC={homnay:'việc tới hạn hôm nay + quá hạn',quahan:'chỉ việc quá hạn',dagiao:'việc đã giao, chờ người khác xong',rieng:'việc riêng của anh'};
@@ -1182,6 +1201,7 @@ function veVT(){
   o.push('<div class="vtghi"><input id="vtmoi" placeholder="+ Ghi việc: quán: sửa góc sân thứ 6 · 31/9 đổi màu sơn, hỏi lại mai" autocomplete="off"><button class="nn chinh" id="vtthem">Ghi</button></div>');
   // 13/10 (C-039): giao luôn lúc ghi — bấm tên trước rồi Ghi
   var nsVT=(SX&&SX.nhanSu||[]).filter(function(n){return n.dangLam;});
+  o.push(chonMucHtml(MUC_VT,'data-mucghi'));   // 14/10 (C-043 B)
   if(nsVT.length)o.push('<div class="vtgiao"><span class="phu">Giao cho:</span><span class="chip'+(GIAO_VT?'':' chon')+'" data-giaovt="">Tôi làm</span>'+nsVT.map(function(n){return '<span class="chip'+(GIAO_VT===n.ma?' chon':'')+'" data-giaovt="'+esc(n.ma)+'">'+esc(n.ten)+(n.telegram?'':' 📵')+'</span>';}).join('')+'</div>');
   o.push('<div class="phu" style="margin:-4px 0 10px">Gõ tự nhiên: hiểu <b>mai · thứ 6 · tuần sau · ngày 20/10</b>, nhóm <b>quán:</b> / <b>bán hàng:</b>, mã đơn ở đầu câu. Nhắn riêng bot Telegram cũng ghi được y vậy.</div>');
   // dữ liệu từng cột (đã lọc)
@@ -1250,7 +1270,7 @@ function hopSuaVT(ma){var v=timVT(ma);if(!v)return;
     moKhoa();google.script.run.withSuccessHandler(function(){chay('webSuaViec',[KHOA,ma,'nhom',nh],function(){bao('Đã sửa');});}).withFailureHandler(function(e){dongKhoa();bao(e.message,1);}).webSuaViec(KHOA,ma,'noiDung',nd);});}
 function themVT(){var e=document.getElementById('vtmoi');if(!e)return;var t=e.value.trim();if(!t)return bao('Gõ việc đã',1);
   if(document.getElementById('chodoi'))return;var nv=GIAO_VT;
-  chay('webThemViec',[KHOA,t,'','','',nv],function(k){GIAO_VT='';
+  var mu=MUC_VT;chay('webThemViec',[KHOA,t,'','','',nv,mu],function(k){GIAO_VT='';MUC_VT='thuong';
     if(k.nguoi)return bao((k.daNhan?'📨 Đã ghi + giao '+k.nguoi:'⚠️ Đã ghi + giao '+k.nguoi+' nhưng chưa có Telegram, báo miệng')+': '+k.noiDung+(k.han?' · hạn '+k.han:''),!k.daNhan);
     bao('📝 Đã ghi: '+k.noiDung+(k.han?' · hạn '+k.han:'')+(k.maHien?' · đơn '+k.maHien:'')+(k.nhom?' · nhóm '+k.nhom:''));});}
 function ganVT(){
@@ -1261,6 +1281,7 @@ function ganVT(){
   // bấm thân thẻ -> chi tiết đơn / hộp sửa (bỏ qua khi bấm vào nút hoặc mã đơn)
   q('[data-cardvt]').forEach(function(h){h.onclick=function(e){if(e.target.closest('button,.xemdon,a,input'))return;var p=h.getAttribute('data-cardvt').split(':');if(p[0]==='don')hopChiTiet(p.slice(1).join(':'));else hopSuaVT(p.slice(1).join(':'));};});
   q('[data-morevt]').forEach(function(b){b.onclick=function(){hopThemVT(b.getAttribute('data-morevt'),b.getAttribute('data-loai'));};});
+  ganThuTu();
   var th=document.getElementById('vtthem');if(th)th.onclick=themVT;
   var inp=document.getElementById('vtmoi');if(inp)inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();themVT();}};
   q('[data-giaovt]').forEach(function(c){c.onclick=function(){GIAO_VT=c.getAttribute('data-giaovt');q('[data-giaovt]').forEach(function(y){y.classList.toggle('chon',y===c);});};});
@@ -1271,6 +1292,53 @@ function ganVT(){
 }
 // 13/10 (C-039): "Chờ vật tư: ray (13/10/2026 09:00)" -> "Chờ vật tư: ray · từ 13/10 09:00"
 function chuVuong(s){return String(s||'').replace(/ \((\d\d\/\d\d)\/\d{4} (\d\d:\d\d)\)$/,' · từ $1 $2');}
+// 13/10 (C-043): 📋 Thứ tự hôm nay — danh sách đánh số, anh tự xếp (⬆ ▲ ▼), làm xong việc 1 thì tới việc 2
+function nutTT(x){   // nút chính: việc anh ghi = ✅ Xong; việc từ đơn = đúng hành động của đơn
+  if(x.kieu==='rieng')return '<button class="nn xongvt vtchinh" data-xongvt="'+esc(x.ma)+'">✅ Xong</button>';
+  if(x.hanh==='giaonguoi')return '<button class="nn giao vtchinh" data-giaonguoi="'+esc(x.maSX)+'" data-vt="'+esc(x.vt)+'">👷 Giao cho…</button>';
+  if(x.hanh==='giaomoc')return '<button class="nn giao vtchinh" data-sx data-ma="'+esc(x.maSX)+'" data-cd="Đang làm mộc" data-vt="mộc">🪚 Giao thợ mộc</button>';
+  if(x.hanh==='nhacdt')return '<button class="nn vtchinh" data-nhacdt="'+esc(x.maSX)+'">📨 Nhắc đối tác</button>';
+  if(x.hanh==='nhackhoan')return '<button class="nn vtchinh" data-nhackhoan="'+esc(x.maSX)+'">📨 Nhắc báo khoán</button>';
+  return '';}
+// 14/10 (C-043 B): mức 🔥 Gấp · Thường · 💤 Để sau — bấm nhãn để đổi (vòng Gấp → Thường → Để sau)
+var MUC_TEN={gap:'🔥 Gấp',thuong:'Thường',sau:'💤 Để sau'};
+function mucKe(m){return m==='gap'?'thuong':m==='thuong'?'sau':'gap';}
+function nhanMuc(x,attr,khoa){var m=x.muc||'thuong';
+  if(khoa)return '<span class="muc '+m+' khoa" title="Anh Hải đặt — chỉ anh Hải hạ được">'+MUC_TEN[m]+' · anh đặt</span>';
+  return '<button class="muc '+m+'" '+attr+'="'+esc(x.key)+'" data-mucke="'+mucKe(m)+'" title="Bấm để đổi mức">'+MUC_TEN[m]+(x.mucTuDong&&m==='gap'?' · tự động':'')+'</button>';}
+function chonMucHtml(bien,attr){return '<div class="vghan"><span class="phu">Mức:</span>'+['gap','thuong','sau'].map(function(m){return '<span class="chip'+(bien===m?' chon':'')+'" '+attr+'="'+m+'">'+MUC_TEN[m]+'</span>';}).join('')+'</div>';}
+function dongTT(x,i,o,nutLam,attrMuc,khoaGap,vaiNguoi){var dau=i===0;
+  var ten=x.kieu==='rieng'?esc(x.noiDung):x.kieu==='buoc'?vienCD(x.cd)+' '+maBam(x.maSX,x.maChung||x.maSX,'span')+(x.tenKhach?' · '+esc(x.tenKhach):''):esc(x.tieuDe);
+  var qh=x.kieu==='rieng'?(x.conLai!==null&&x.conLai<0):x.tre;
+  var meta=nhanMuc(x,attrMuc,khoaGap&&x.mucAnh&&x.muc==='gap')
+    +(x.kieu==='rieng'?(vaiNguoi?(x.tt==='Đang làm'?'<span class="ttv dl">▶ Đang làm</span>':x.tt==='Đang vướng'?'<span class="ttv vg">⛔ Đang vướng</span>':''):'')+hanVT(x)+(vaiNguoi?'<span>'+(x.tuGhi?'tự ghi':'anh giao')+'</span>':'')
+      :(x.kieu==='don'&&x.ngayO!==null&&x.ngayO!==undefined?'<span>ở bước này <b>'+soNgay(x.ngayO)+'</b></span>':'')+(x.tre?'<span class="do">🔴 trễ hạn</span>':x.han&&x.kieu==='buoc'?'<span>hạn '+esc(ngayGon(x.han))+'</span>':''));
+  o.push('<div class="ttdong'+(dau&&x.muc!=='sau'?' dau':'')+(qh?' do':'')+' m-'+(x.muc||'thuong')+'"><div class="ttso">'+x.so+'</div><div class="ttthan">'
+    +'<div class="vtt">'+(x.nhom?'<span class="vtnhom">'+esc(x.nhom)+'</span>':'')+ten+'</div>'+(x.kieu==='buoc'?'':nhanDon(x))
+    +'<div class="meta">'+meta+'</div>'+(x.vuong?'<div class="vgly">⛔ '+esc(chuVuong(x.vuong))+'</div>':'')
+    +(nutLam?'<div class="viec vtnut">'+nutLam+'</div>':'')+'</div></div>');}
+function veDanhSachMuc(ds,o,nutCua,attrMuc,khoaGap,vaiNguoi,moSau,attrMoSau){
+  var chinh=ds.filter(function(x){return x.muc!=='sau';}),sau=ds.filter(function(x){return x.muc==='sau';});
+  o.push('<div class="ttds">');chinh.forEach(function(x,i){dongTT(x,i,o,nutCua(x,i),attrMuc,khoaGap,vaiNguoi);});
+  if(sau.length){o.push('<button class="nn ttsau" '+attrMoSau+'="1">💤 Để sau ('+sau.length+') '+(moSau?'▲ ẩn':'▼ xem')+'</button>');
+    if(moSau)sau.forEach(function(x){dongTT(x,99,o,nutCua(x,99),attrMuc,khoaGap,vaiNguoi);});}
+  o.push('</div>');}
+function khoiThuTu(v){var nguoi=v.thuTuNguoi||[],cua=TT_AI?nguoi.filter(function(n){return n.ma===TT_AI;})[0]:null;
+  if(TT_AI&&!cua)TT_AI='';
+  var ds=cua?cua.ds:(v.thuTu||[]),o=[];
+  o.push('<h2>📋 Thứ tự hôm nay <span class="dem">'+ds.filter(function(x){return x.muc!=='sau';}).length+'</span></h2>');
+  if(nguoi.length)o.push('<div class="vtgiao">'+[{ma:'',ten:'Của tôi',n:(v.thuTu||[]).length}].concat(nguoi.map(function(n){return {ma:n.ma,ten:'Của '+n.ten,n:n.ds.length};}))
+    .map(function(n){return '<span class="chip'+(TT_AI===n.ma?' chon':'')+'" data-ttai="'+esc(n.ma)+'">'+esc(n.ten)+' <b>'+n.n+'</b></span>';}).join('')+'</div>');
+  o.push('<div class="phu" style="margin:-4px 0 8px">'+(cua?'Việc của <b>'+esc(cua.ten)+'</b> xếp theo mức. Anh bấm nhãn mức để đổi — '+esc(cua.ten)+' không hạ được việc anh đánh 🔥 Gấp.':'Xếp tự động: 🔥 Gấp anh đặt → 🔥 đơn trễ → Thường → 💤 Để sau, cùng mức thì việc tới hạn trước. Bấm nhãn mức để đổi.')+'</div>');
+  if(!ds.length)return o.concat('<div class="trong" style="margin-bottom:12px">'+(cua?esc(cua.ten)+' không còn việc nào.':'Không còn việc nào phải tự làm hôm nay.')+' 👍</div>').join('');
+  veDanhSachMuc(ds,o,function(x,i){if(cua)return '';var n=nutTT(x);return i===0?n:n.replace('vtchinh','nho');},'data-mucvt',false,!!cua,MO_SAU_VT,'data-mosauvt');
+  return o.join('');}
+function ganThuTu(){
+  q('[data-mucvt]').forEach(function(b){b.onclick=function(ev){ev.stopPropagation();if(document.getElementById('chodoi'))return;
+    chay('webDatMuc',[KHOA,b.getAttribute('data-mucvt'),b.getAttribute('data-mucke'),TT_AI],function(k){bao('Mức: '+MUC_TEN[k.muc]);});};});
+  q('[data-ttai]').forEach(function(c){c.onclick=function(){TT_AI=c.getAttribute('data-ttai');ve(DL);};});
+  q('[data-mosauvt]').forEach(function(c){c.onclick=function(){MO_SAU_VT=!MO_SAU_VT;ve(DL);};});
+  q('[data-mucghi]').forEach(function(c){c.onclick=function(){MUC_VT=c.getAttribute('data-mucghi');q('[data-mucghi]').forEach(function(y){y.classList.toggle('chon',y===c);});};});}
 // ===== ĐƠN HÀNG (giữ như cũ) =====
 var VIEC={'Nhận đơn':[['vaosx','🏭 Đưa vào sản xuất',1],['gia','💰 Chốt giá',0],['huy','❌ Huỷ',0]],
   'Báo giá':[['vaosx','🏭 Đưa vào sản xuất',1],['gia','💰 Sửa giá',0],['huy','❌ Huỷ',0]],
@@ -2015,26 +2083,30 @@ function hopVuong(ma){var v=(DL.viecGiao||[]).filter(function(x){return x.ma===m
 function khoiViecGiao(){var ds=DL.viecGiao||[],t=DL.toi||{},o=[];
   var qh=ds.filter(function(v){return v.conLai!==null&&v.conLai<0;}).length;
   var vgn=ds.filter(function(v){return v.tt==='Đang vướng';}).length;
-  o.push('<h2>📝 Việc của '+esc(t.ten)+' <span class="dem">'+ds.length+'</span>'+(qh?' <span class="vgqh">'+qh+' quá hạn</span>':'')+(vgn?' <span class="vgqh cam">'+vgn+' vướng</span>':'')+'</h2>');
+  o.push('<h2>📋 Việc của '+esc(t.ten)+' <span class="dem">'+((DL.thuTu&&DL.thuTu.ds)||[]).length+'</span>'+(qh?' <span class="vgqh">'+qh+' quá hạn</span>':'')+(vgn?' <span class="vgqh cam">'+vgn+' vướng</span>':'')+'</h2>');
   o.push('<div class="vtghi"><input id="vgmoi" placeholder="+ Ghi việc: 31/9 gọi chành xe mai · kiểm máy cưa" autocomplete="off"><button class="nn chinh" id="vgthem">Ghi</button></div>');
   o.push('<div class="vghan"><span class="phu">Hạn:</span>'+[['','Không hẹn'],['homnay','Hôm nay'],['mai','Mai']].map(function(h){return '<span class="chip'+(HAN_VG===h[0]?' chon':'')+'" data-hanvg="'+h[0]+'">'+h[1]+'</span>';}).join('')
     +'<input type="date" id="vgngay" value="'+(/^\d{4}-/.test(HAN_VG)?HAN_VG:'')+'"></div>');
+  o.push(chonMucHtml(MUC_VG,'data-mucghivg'));   // 14/10 (C-043 B)
   o.push('<div class="phu" style="margin:0 0 8px">Gõ mã đơn ở đầu câu để gắn đơn. Việc anh Hải giao cũng hiện ở đây.</div>');
-  if(!ds.length)o.push('<div class="trong">Chưa có việc nào. 👍</div>');
-  ds.forEach(function(v){
-    o.push('<div class="hang vt'+(v.conLai!==null&&v.conLai<0?' do':v.conLai===0?' camm':'')+'"><div class="vtt">'+esc(v.noiDung)+'</div>'
-      +(v.maSX?'<span class="vtdon">'+maBam(v.maSX,v.maChung||v.maSX,'span')+(v.tenKhach?' · '+esc(v.tenKhach):'')+(v.cdDon?' · '+esc(v.cdDon):'')+'</span>':'')
-      +'<div class="meta">'+nhanTTV(v)+hanVG(v)+'<span>'+(v.tuGhi?'tự ghi':'anh Hải giao')+' '+esc(ngayGon(v.giaoLuc||v.luc))+'</span></div>'
-      +(v.vuong?'<div class="vgly">⛔ '+esc(chuVuong(v.vuong))+'</div>':'')
-      +'<div class="viec vtnut">'+(v.tt!=='Đang làm'?'<button class="nn vgbd" data-vgbd="'+esc(v.ma)+'">▶ '+(v.tt==='Đang vướng'?'Làm tiếp':'Bắt đầu')+'</button>':'')
-      +'<button class="nn xongvt vtchinh" data-vgxong="'+esc(v.ma)+'">✅ Xong</button>'
-      +(v.tt!=='Đang vướng'?'<button class="nn vgvg" data-vgvg="'+esc(v.ma)+'" title="Đang vướng">⛔</button>':'')
-      +'<button class="nn vtmore" data-vgbo="'+esc(v.ma)+'" data-tu="'+(v.tuGhi?1:0)+'" title="Bỏ việc này">✕</button></div></div>');});
+  // 14/10 (C-043 B): danh sách đánh số theo mức — bước đơn đang giữ + việc giao; bấm nhãn mức để đổi (trừ việc anh đánh 🔥 Gấp)
+  var tt=(DL.thuTu&&DL.thuTu.ds)||[];
+  if(!tt.length)o.push('<div class="trong">Chưa có việc nào. 👍</div>');
+  else veDanhSachMuc(tt,o,function(x,i){var nut='';
+    if(x.kieu==='buoc'){if(x.cd==='Đóng kiện')nut='<button class="nn" data-ghikien="'+esc(x.maSX)+'">📦 Ghi kiện</button><button class="nn xong vtchinh" data-guixe="'+esc(x.maSX)+'">🚚 Đã gửi xe</button>';
+      else if(VIEC_XONG_JS[x.cd])nut='<button class="nn xong vtchinh" data-xongviec="'+esc(x.maSX)+'">✅ Xong</button>';}
+    else nut=(x.tt!=='Đang làm'?'<button class="nn vgbd" data-vgbd="'+esc(x.ma)+'">▶ '+(x.tt==='Đang vướng'?'Làm tiếp':'Bắt đầu')+'</button>':'')
+      +'<button class="nn xongvt vtchinh" data-vgxong="'+esc(x.ma)+'">✅ Xong</button>'
+      +(x.tt!=='Đang vướng'?'<button class="nn vgvg" data-vgvg="'+esc(x.ma)+'" title="Đang vướng">⛔</button>':'')
+      +'<button class="nn vtmore" data-vgbo="'+esc(x.ma)+'" data-tu="'+(x.tuGhi?1:0)+'" title="Bỏ việc này">✕</button>';
+    return nut;},'data-muctoi',true,true,MO_SAU_VG,'data-mosauvg');
+  var sau=ds.filter(function(v){return v.conLai!==null&&v.conLai>0;});
+  if(sau.length)o.push('<div class="phu" style="margin:-6px 0 12px">⏳ Hẹn ngày sau ('+sau.length+'): '+sau.map(function(v){return esc(v.noiDung)+' · '+esc(String(v.han).slice(0,5));}).join(' · ')+'</div>');
   return o.join('');}
 function themVG(){var e=document.getElementById('vgmoi');if(!e)return;var nd=e.value.trim();if(!nd)return bao('Chưa ghi nội dung',1);
   var h=HAN_VG,n=new Date();if(h==='homnay'||h==='mai'){if(h==='mai')n.setDate(n.getDate()+1);h=n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2);}
   if(document.getElementById('chodoi'))return;   // đang gửi -> chống bấm đúp / Enter hai lần
-  chay('webThemViecToi',[KHOA,nd,h,''],function(k){HAN_VG='';bao('📝 Đã ghi: '+k.noiDung+(k.han?' · hạn '+k.han:'')+(k.maHien?' · đơn '+k.maHien:''));});}
+  var mu=MUC_VG;chay('webThemViecToi',[KHOA,nd,h,'',mu],function(k){HAN_VG='';MUC_VG='thuong';bao('📝 Đã ghi: '+k.noiDung+(k.han?' · hạn '+k.han:'')+(k.maHien?' · đơn '+k.maHien:''));});}
 function ganViecGiao(){
   var b=document.getElementById('vgthem');if(b)b.onclick=themVG;
   var e=document.getElementById('vgmoi');if(e)e.onkeydown=function(x){if(x.key==='Enter'){x.preventDefault();themVG();}};
@@ -2042,6 +2114,9 @@ function ganViecGiao(){
   var d=document.getElementById('vgngay');if(d)d.onchange=function(){HAN_VG=d.value||'';q('[data-hanvg]').forEach(function(y){y.classList.toggle('chon',y.getAttribute('data-hanvg')===HAN_VG);});};
   q('[data-vgxong]').forEach(function(x){x.onclick=function(){if(document.getElementById('chodoi'))return;chay('webSuaViecToi',[KHOA,x.getAttribute('data-vgxong'),'xong'],function(k){bao('✅ Đã xong'+(k.baoAnh?' · đã báo anh Hải':''));});};});
   q('[data-vgbd]').forEach(function(x){x.onclick=function(){if(document.getElementById('chodoi'))return;chay('webSuaViecToi',[KHOA,x.getAttribute('data-vgbd'),'batdau'],function(){bao('▶ Đang làm');});};});
+  q('[data-muctoi]').forEach(function(b){b.onclick=function(ev){ev.stopPropagation();if(document.getElementById('chodoi'))return;chay('webDatMucToi',[KHOA,b.getAttribute('data-muctoi'),b.getAttribute('data-mucke')],function(k){bao('Mức: '+MUC_TEN[k.muc]);});};});
+  q('[data-mosauvg]').forEach(function(c){c.onclick=function(){MO_SAU_VG=!MO_SAU_VG;ve(DL);};});
+  q('[data-mucghivg]').forEach(function(c){c.onclick=function(){MUC_VG=c.getAttribute('data-mucghivg');q('[data-mucghivg]').forEach(function(y){y.classList.toggle('chon',y===c);});};});
   q('[data-vgvg]').forEach(function(x){x.onclick=function(){hopVuong(x.getAttribute('data-vgvg'));};});
   q('[data-vgbo]').forEach(function(x){x.onclick=function(){
     if(!confirm(x.getAttribute('data-tu')==='1'?'Bỏ việc này?':'Bỏ việc anh Hải giao? Anh Hải sẽ nhận tin báo.'))return;
