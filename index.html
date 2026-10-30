@@ -490,6 +490,7 @@ function nhanYC(ma){var y=ycCua(ma);if(!y.length)return '';
 function dongYC(ma){var y=ycCua(ma);if(!y.length)return '';
   return '<div class="meta">'+y.slice(0,4).map(function(x){return '<span'+(x.conLai!==null&&x.conLai<0?' style="color:var(--do)"':'')+'>🔧 '+esc(String(x.noiDung).slice(0,70))+(x.tenGiao?' · 👷 '+esc(x.tenGiao):' · chưa giao')+'</span>';}).join('')+(y.length>4?'<span>… còn '+(y.length-4)+'</span>':'')+'</div>';}
 var PHIEN_BAN=[
+  ['90','30/10/2026','🖼 Ảnh sản phẩm hiện ngay: hộp 🔎 Đối tác mới hiện hình thật của từng món SQI (trước chỉ có chữ “Mở ảnh” vì link là trang prnt.sc) · bấm Bật đồng bộ tải tối đa 12 ảnh mẫu về xưởng ngay (trước 6), phần còn lại các lượt 30 phút sau; ảnh vào thẻ đơn như đơn đối tác cũ'],
   ['89','28/10/2026','🔌 Đối tác mới SQI, RI vào sản xuất thật: nút “🔎 Đối tác mới SQI · RI” cuối tab Sản xuất có thêm nút ▶ Bật đồng bộ cho từng đối tác (mặc định TẮT). Bật xong: món SQI “Đang làm” / món RI đã có cọc thành lệnh ở Chờ giao mộc kèm ảnh mẫu, anh nhận 1 tin tóm tắt, bot không nhắn thợ · từ đó mỗi 30 phút bot đọc file, đơn mới báo anh + Dũng (không giá), đổi kích thước / ghi chú báo kèm tên thợ đang giữ, đổi giá / thanh toán và dòng bị xoá chỉ báo riêng anh, không tự huỷ lệnh · RI chưa cọc nằm mục chờ, bấm ▶ Cho làm là lên lệnh cả đơn · đơn đi như đơn tự nhập (không có hai cửa chờ đối tác), không lẫn vào đối soát, giá / cọc / link file không vào lệnh · hạn mộc tính 7 ngày từ ngày chốt / ngày lên đơn'],
   ['88','28/10/2026','🔎 Xem thử đối tác mới (SQI, RI): nút ở cuối tab Sản xuất — chỉ đọc, cho anh xem hệ thống hiểu 2 file đối tác thế nào: món nào sẽ lên lệnh, món nào đang chờ, món nào đáng ngờ, thợ sẽ thấy gì (tiền bị ẩn) và thử tải ảnh · chưa tạo lệnh, chưa nhắn ai'],
   ['86','14/10/2026','📋 Thứ tự việc theo mức: khi ghi / giao việc chọn 🔥 Gấp · Thường · 💤 Để sau — máy tự xếp số 1, 2, 3: Gấp anh đặt → đơn trễ (Gấp tự động) → Thường → Để sau, cùng mức thì việc tới hạn trước; bấm nhãn mức để đổi · Việc của tôi có chip Của tôi / Của Dũng để anh đặt mức cho Dũng · màn Dũng → Điều phối: danh sách đánh số gồm bước đơn Dũng đang giữ + việc giao, việc số 1 có nút làm luôn; Dũng không hạ được việc anh đánh Gấp · giao việc Gấp thì tin Telegram có 🔥 GẤP · tin "Bỏ", "ok"… nhắn bot không còn bị ghi thành việc'],
@@ -2286,7 +2287,9 @@ function xtNhan(d){
   return (d.nhan||[]).map(function(n){
     return '<span class="'+(n.muc==='nghi'?'xtnghi':'xtchip')+'">'+esc(n.chu)+'</span>';}).join('');}
 function xtAnh(d){
-  if(d.kieuAnh==='truc_tiep')return '<a href="'+esc(d.linkAnh)+'" target="_blank"><img class="xtanh" loading="lazy" src="'+esc(d.linkAnh)+'" alt="" onerror="this.style.display=\'none\'"></a>';
+  // 30/10: hiện ngay hình (server trả anhHien = link ảnh thật kể cả với trang prnt.sc); hình lỗi thì rơi về chữ "Mở ảnh"
+  var src=d.anhHien||(d.kieuAnh==='truc_tiep'?d.linkAnh:'');
+  if(src&&d.kieuAnh!=='khong')return '<a href="'+esc(d.linkAnh)+'" target="_blank"><img class="xtanh" loading="lazy" referrerpolicy="no-referrer" src="'+esc(src)+'" alt="" onerror="this.parentNode.innerHTML=\'🔗 Mở ảnh\'"></a>';
   if(d.kieuAnh==='trang_xem')return '<a class="link" href="'+esc(d.linkAnh)+'" target="_blank">🔗 Mở ảnh</a>';
   return '<span class="phu">chưa có ảnh</span>';}
 function xtTheLenh(d,kq){
