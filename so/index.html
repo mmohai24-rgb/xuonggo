@@ -154,7 +154,10 @@ function dungGoiY() {
 }
 function khongGhi() {
   var nh = D.nhap && D.nhap.nh;
-  if (D.nhanh) return ve('<div class="xong"><div class="tron" style="background:#8e8e93">✕</div><h2>Không ghi</h2><p>Khoản này không vào sổ. Anh vuốt về là xong.</p></div>' + nutSo());
+  if (D.nhanh) { // 02/11: mở từ link bot (có mã GD ngân hàng) → báo máy chủ bỏ qua để bot thôi nhắc
+    if (D.nhap.maGD && D.k) google.script.run.withFailureHandler(function () { }).boQuaNHSo(D.k, D.nhap.maGD);
+    return ve('<div class="xong"><div class="tron" style="background:#8e8e93">✕</div><h2>Không ghi</h2><p>Khoản này không vào sổ. Anh vuốt về là xong.</p></div>' + nutSo());
+  }
   if (nh) google.script.run.withFailureHandler(function () { }).boQuaNH(D.nhap.id, D.nhap.the); // phiếu từ email BIDV → bot không nhắc nữa
   ve('<div class="xong"><div class="tron" style="background:#8e8e93">✕</div><h2>Không ghi</h2><p>' + (nh ? 'Đã đánh dấu <b>không phải khoản chi</b> — bot không nhắc khoản này nữa.' : 'Khoản này không vào sổ. Anh vuốt về là xong.') + '</p></div>' + nutSo());
 }
@@ -412,7 +415,7 @@ var API_URL = "https://script.google.com/macros/s/AKfycbwTKkq4vJ_AjLCJNZQExMJK0M
     var s = null, f = null, p = {};
     p.withSuccessHandler = function (x) { s = x; return p; };
     p.withFailureHandler = function (x) { f = x; return p; };
-    ["boQuaNH","ghiTuChu","trangGhi","trangGhiNH","trangGhiTay","boQuaNHSo","baoCaoChi","trangHuy","kiemTrung","chuaGhiNH"].forEach(function (fn) {
+    ["boQuaNHSo","boQuaNH","ghiTuChu","trangGhi","trangGhiNH","trangGhiTay","baoCaoChi","trangHuy","kiemTrung","chuaGhiNH"].forEach(function (fn) {
       p[fn] = function () { var a = Array.prototype.slice.call(arguments);
         goi(fn, a).then(function (v) { if (s) s(v); }, function (e) { if (f) f(e); else alert(e.message); }); };
     });
