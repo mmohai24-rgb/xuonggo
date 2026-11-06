@@ -95,7 +95,7 @@ var NHC = null; // 09/10: khoản BIDV chưa ghi đang được ghi từ trang S
 function soNhap() { return D.che === 'ghi' ? (D.nhap.soTien || 0) : (NHC ? NHC.soTien : 0); }
 function phuDau() {
   if (D.dangTai) return '⏳ Đang đọc màn hình chuyển khoản… anh cứ chọn trước';
-  return D.che === 'ghi' ? ((D.nhap.gio || '') + ' ' + (D.nhap.ngay || '') + (D.nguoi ? ' → ' + D.nguoi : (D.nhap.maGD ? ' · ' + D.nhap.maGD : ''))) : NHC ? ('🏦 BIDV ' + NHC.gio + ' ' + NHC.ngay + ' → ' + NHC.nguoi) : 'Ghi tay (không có ảnh)';
+  return D.che === 'ghi' ? ((D.nhap.gio || '') + ' ' + (D.nhap.ngay || '') + (D.nguoi ? ' → ' + D.nguoi : (D.nhap.maGD ? ' · ' + D.nhap.maGD : ''))) : NHC ? ('🏦 Ngân hàng ' + NHC.gio + ' ' + NHC.ngay + ' → ' + NHC.nguoi) : 'Ghi tay (không có ảnh)';
 }
 function dau(khongDuong) {
   var so = soTuChu(C.soTien) || soNhap();
@@ -307,13 +307,13 @@ function veChuaGhi() {
   var ds = D.chuaGhi || [];
   if (!ds.length) return '';
   var tong = ds.reduce(function (a, x) { return a + x.soTien; }, 0);
-  var h = '<div class="hoi" style="color:#b3261e">⚠️ ' + ds.length + ' khoản BIDV chưa ghi sổ · ' + tien(tong) + '</div><div class="nhom" id="chuaGhi">';
+  var h = '<div class="hoi" style="color:#b3261e">⚠️ ' + ds.length + ' khoản ngân hàng chưa ghi sổ · ' + tien(tong) + '</div><div class="nhom" id="chuaGhi">';
   ds.forEach(function (x, i) {
     h += '<div class="mu nh" style="cursor:default"><span class="ic" style="background:#fde8e7">🏦</span><span class="nd"><span class="t">' + tien(x.soTien) + '</span>'
       + '<span class="m">→ ' + esc(x.nguoi || '?') + (x.nganHang ? ' · ' + esc(x.nganHang) : '') + '<br>' + esc(x.gio) + ' ' + esc(x.ngay.slice(0, 5)) + (x.noiDung && !/chuyen tien$/i.test(x.noiDung) ? ' · ' + esc(x.noiDung) : '') + '</span></span>'
       + '<div class="nbs"><button class="nb" onclick="ghiNH(' + i + ')">Ghi vào sổ</button><button class="nb phu" onclick="khongGhiNH(' + i + ')">Không ghi</button></div></div>';
   });
-  return h + '</div><div class="ghichu" style="margin-top:6px;text-align:left">Lấy từ email BIDV. <b>Ghi vào sổ</b> → chọn chi cho đâu như thường. <b>Không ghi</b> → không phải khoản chi (chuyển qua tài khoản của anh…).</div>';
+  return h + '</div><div class="ghichu" style="margin-top:6px;text-align:left">Lấy từ email ngân hàng (BIDV, VIB). <b>Ghi vào sổ</b> → chọn chi cho đâu như thường. <b>Không ghi</b> → không phải khoản chi (chuyển qua tài khoản của anh…).</div>';
 }
 function ghiNH(i) {
   NHC = D.chuaGhi[i];
