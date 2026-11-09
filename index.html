@@ -106,6 +106,7 @@ textarea{min-height:66px;resize:vertical}
 .cuoi button.chinh{background:var(--nhan);color:#fff;border-color:transparent}
 .bao{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:60;background:#232323;color:#fff;padding:11px 18px;border-radius:99px;font-size:14px;max-width:90%;text-align:center}
 .bao.loi{background:var(--do)}
+.chipluu{position:fixed;right:12px;top:12px;z-index:55;background:var(--camnen,#fff4e0);color:var(--cam,#b45309);padding:6px 12px;border-radius:99px;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .dangchay{position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:50;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
 .cot{display:grid;gap:10px;grid-template-columns:1fr}
 @media(min-width:700px){.cot{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}}
@@ -475,10 +476,39 @@ function bao(t,loi){var e=document.createElement('div');e.className='bao'+(loi?'
 function moKhoa(){var e=document.createElement('div');e.className='dangchay';e.id='chodoi';e.textContent='Đang lưu…';document.body.appendChild(e);}
 function dongKhoa(){var e=document.getElementById('chodoi');if(e)e.remove();}
 function dongHop(){document.getElementById('hopthoai').innerHTML='';}
-function chay(ten,ts,xong){if(DANG_CU){bao('Đang lấy dữ liệu mới nhất, bấm lại sau vài giây nhé',1);return;}moKhoa();
+// C-050 (09/11): bấm lưu không bắt chờ — hộp đóng ngay, lưu ngầm lần lượt theo hàng, xem dac_ta/C-050_luu_ngam.md
+// Q1 hộp đóng ngay + chip "Đang lưu N việc" · Q2 lưu lần lượt · Q3 chống bấm đúp · Q4 lỗi thì dừng hàng, báo đỏ · Q5 bản cũ vẫn chặn · Q6 hỏi khi rời trang · Q7 tải lại một lần
+var HANG_LUU=[],DANG_LUU=null;
+var CHAY_CHO={webBangDiemDanh:1,webTaoMau:1,webGanMau:1};   // cần kết quả để mở màn tiếp → vẫn chờ như cũ
+var TEN_VIEC={webGiaoViec:'Giao việc',webGiaoNguoi:'Giao việc',webGiaoBuoc:'Giao việc',webGiaoMoc:'Giao mộc',webXongViec:'Báo xong',webDoiTrangThai:'Đổi trạng thái',
+  webGhiTien:'Ghi tiền',webThemThuChi:'Ghi thu chi',webGuiXe:'Gửi xe',webSuaViec:'Sửa việc',webSuaViecToi:'Sửa việc',webDiemDanh:'Điểm danh',webThemViec:'Thêm việc',
+  webTaoDon:'Tạo đơn',webSuaDon:'Sửa đơn',webHuyDon:'Huỷ đơn',webTamNgung:'Tạm ngưng',webMoLai:'Mở lại đơn',webLuiBuoc:'Lùi bước',webDatGiaThanh:'Lưu giá thành'};
+function nhanViec(v){var t=TEN_VIEC[v.ten]||v.ten.replace(/^web/,''),ps=[];
+  for(var i=1;i<v.ts.length&&ps.length<3;i++){var x=v.ts[i];
+    if(typeof x==='number'&&x)ps.push(x>=1000?tien(x):String(x));else if(typeof x==='string'&&x&&x.length<=24)ps.push(x);}
+  return t+(ps.length?' · '+ps.join(' · '):'');}
+function chipLuu(){var e=document.getElementById('chipluu'),n=HANG_LUU.length+(DANG_LUU?1:0);
+  if(!n){if(e)e.remove();return;}
+  if(!e){e=document.createElement('div');e.id='chipluu';e.className='chipluu';document.body.appendChild(e);}
+  e.textContent='⏳ Đang lưu '+n+' việc…';}
+function chayCho(ten,ts,xong){moKhoa();
   var r=google.script.run.withSuccessHandler(function(kq){dongKhoa();dongHop();if(xong)xong(kq);tai();})
     .withFailureHandler(function(e){dongKhoa();bao((e&&e.message)||'Lỗi',1);});
   r[ten].apply(r,ts);}
+function chay(ten,ts,xong){if(DANG_CU){bao('Đang lấy dữ liệu mới nhất, bấm lại sau vài giây nhé',1);return;}
+  if(CHAY_CHO[ten])return chayCho(ten,ts,xong);
+  var khoa;try{khoa=ten+'|'+JSON.stringify(ts);}catch(e){khoa=ten+'|'+Date.now();}
+  if((DANG_LUU&&DANG_LUU.khoa===khoa)||HANG_LUU.some(function(v){return v.khoa===khoa;})){bao('Việc này đang lưu, chờ chút nhé',1);return;}
+  dongHop();HANG_LUU.push({ten:ten,ts:ts,xong:xong,khoa:khoa});
+  if(!DANG_LUU)luuTiep();else chipLuu();}
+function luuTiep(){DANG_LUU=HANG_LUU.shift()||null;chipLuu();
+  if(!DANG_LUU){tai();return;}
+  var v=DANG_LUU;
+  var r=google.script.run.withSuccessHandler(function(kq){try{if(v.xong)v.xong(kq);}catch(e){}DANG_LUU=null;luuTiep();})
+    .withFailureHandler(function(e){var bo=[v].concat(HANG_LUU);HANG_LUU=[];DANG_LUU=null;chipLuu();
+      bao('Chưa lưu: '+bo.map(nhanViec).join(' ; ')+' — '+((e&&e.message)||'Lỗi'),1);tai();});
+  r[v.ten].apply(r,v.ts);}
+window.addEventListener('beforeunload',function(e){if(DANG_LUU||HANG_LUU.length){e.preventDefault();e.returnValue='Còn việc chưa lưu xong, vẫn rời trang?';return e.returnValue;}});
 function hop(tieuDe,than,nutOK,khiOK){
   var h='<div class="lop" id="lop"><div class="hop"><div class="dauhop"><h3>'+tieuDe+'</h3><button class="xhop" id="xhop" aria-label="Đóng" title="Đóng">✕</button></div>'+than+
     '<div class="cuoi"><button id="huyhop">Đóng</button>'+(nutOK?'<button class="chinh" id="okhop">'+nutOK+'</button>':'')+'</div></div></div>';
@@ -496,6 +526,7 @@ function nhanYC(ma){var y=ycCua(ma);if(!y.length)return '';
 function dongYC(ma){var y=ycCua(ma);if(!y.length)return '';
   return '<div class="meta">'+y.slice(0,4).map(function(x){return '<span'+(x.conLai!==null&&x.conLai<0?' style="color:var(--do)"':'')+'>🔧 '+esc(String(x.noiDung).slice(0,70))+(x.tenGiao?' · 👷 '+esc(x.tenGiao):' · chưa giao')+'</span>';}).join('')+(y.length>4?'<span>… còn '+(y.length-4)+'</span>':'')+'</div>';}
 var PHIEN_BAN=[
+  ['92.1','09/11/2026','⚡ Bấm lưu không bắt chờ: hộp đóng ngay, góc trên hiện “⏳ Đang lưu N việc…”, vẫn xem và bấm tiếp được · nhiều việc lưu lần lượt theo thứ tự bấm · bấm đúp không ghi hai lần · lưu lỗi thì báo đỏ ghi rõ việc nào chưa lưu · còn việc đang lưu mà đóng trang thì máy hỏi trước'],
   ['92','31/10/2026','🔖 Lọc theo đối tác ở tab Sản xuất: hàng chip “Đối tác: Tất cả · Đối tác chính · SQI · RI · Tự nhập” ngay đầu tab — bấm một đối tác thì mọi ô, danh sách công đoạn, theo thợ, theo tháng, việc đã xong chỉ còn lệnh của đối tác đó (kèm số đang chạy bên cạnh) · các ô Tiền, Thay đổi file và Mã trùng là của đối tác chính nên ẩn khi xem SQI / RI / Tự nhập · thẻ SQI, RI hiện nhãn nguồn thay cho dòng “đối tác (trống)”'],
   ['91','31/10/2026','💰 Báo giá cho SQI: khi SQI ghi Tình trạng “Báo giá”, món hiện ở mục Chờ báo giá trong hộp 🔎 Đối tác mới (ảnh, kích thước, mã đơn) · anh gõ giá (theo đơn, hoặc từng món; gõ 8tr5 hay 8.500.000 đều được) → 👁 Xem trước → ▶ Gửi cho SQI: bot gửi vào nhóm Telegram của SQI mã đơn + ảnh + kích thước + giá · chỉ gửi khi anh bấm Gửi, bấm đúp không gửi hai lần, gửi lỗi anh nhận báo riêng · gắn nhóm: thêm bot vào nhóm SQI rồi gõ /nhomsqi trong nhóm (bot trả lời riêng anh) · mọi việc khác bot vẫn im lặng trong nhóm đối tác'],
   ['90','30/10/2026','🖼 Ảnh sản phẩm hiện ngay: hộp 🔎 Đối tác mới hiện hình thật của từng món SQI (trước chỉ có chữ “Mở ảnh” vì link là trang prnt.sc) · bấm Bật đồng bộ tải tối đa 12 ảnh mẫu về xưởng ngay (trước 6), phần còn lại các lượt 30 phút sau; ảnh vào thẻ đơn như đơn đối tác cũ'],
