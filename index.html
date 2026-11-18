@@ -491,7 +491,7 @@ function dongHop(){document.getElementById('hopthoai').innerHTML='';}
 var HANG_LUU=[],DANG_LUU=null;
 var CHAY_CHO={webBangDiemDanh:1,webTaoMau:1,webGanMau:1};   // cần kết quả để mở màn tiếp → vẫn chờ như cũ
 var TEN_VIEC={webGiaoViec:'Giao việc',webGiaoNguoi:'Giao việc',webGiaoBuoc:'Giao việc',webGiaoMoc:'Giao mộc',webXongViec:'Báo xong',webDoiTrangThai:'Đổi trạng thái',
-  webGhiTien:'Ghi tiền',webThemThuChi:'Ghi thu chi',webGuiXe:'Gửi xe',webSuaViec:'Sửa việc',webSuaViecToi:'Sửa việc',webDiemDanh:'Điểm danh',webThemViec:'Thêm việc',
+  webGhiTien:'Ghi tiền',webThemThuChi:'Ghi thu chi',webGuiXe:'Gửi xe',webGuiXeNhayCoc:'Gửi xe',webHuyGuiXeNhayCoc:'Huỷ gửi xe',webSuaViec:'Sửa việc',webSuaViecToi:'Sửa việc',webDiemDanh:'Điểm danh',webThemViec:'Thêm việc',
   webTaoDon:'Tạo đơn',webSuaDon:'Sửa đơn',webHuyDon:'Huỷ đơn',webTamNgung:'Tạm ngưng',webMoLai:'Mở lại đơn',webLuiBuoc:'Lùi bước',webDatGiaThanh:'Lưu giá thành'};
 function nhanViec(v){var t=TEN_VIEC[v.ten]||v.ten.replace(/^web/,''),ps=[];
   for(var i=1;i<v.ts.length&&ps.length<3;i++){var x=v.ts[i];
@@ -538,6 +538,7 @@ function dongYC(ma){var y=ycCua(ma);if(!y.length)return '';
 // 17/11: dòng bản 93 (C-051 kho đệm Cloudflare) tạm bỏ vì kho chưa bật — thêm lại khi bật:
 // ['93','09/11/2026','☁️ Mở bảng nhanh: bảng lấy ngay bản làm sẵn trên Cloudflare (dưới 1 giây), dòng trên cùng ghi “☁️ Bản lúc …”, rồi vẫn tự kiểm lại với Google phía sau · bản dưới 10 phút thì bấm lưu được ngay, không chờ chữ cam · mỗi người chỉ lấy được bản của mình (thợ không thấy giá) · Cloudflare trục trặc thì bảng tự mở như cũ'],
 var PHIEN_BAN=[
+  ['95','18/11/2026','🚚 Đã gửi xe ở mọi bước: đơn đã rời xưởng mà chưa ai bấm cập nhật các bước → thẻ đơn có nút 🚚 Đã gửi xe (chỉ anh) · chọn ngày gửi, số kiện, chành xe · khoán đang mở tính xong cho thợ (bỏ tick nếu không) · thợ đang giữ nhận tin dừng · bấm nhầm thì ↩ Huỷ gửi xe'],
   ['94','17/11/2026','💰 Tab Báo giá SQI: gõ giá → 📋 Chép → dán vào nhóm SQI (bot không gửi) · đồng bộ SQI đọc đúng file mới, có ngày chốt là lên lệnh'],
   ['92.1','09/11/2026','⚡ Bấm lưu không bắt chờ: hộp đóng ngay, góc trên hiện “⏳ Đang lưu N việc…”, vẫn xem và bấm tiếp được · nhiều việc lưu lần lượt theo thứ tự bấm · bấm đúp không ghi hai lần · lưu lỗi thì báo đỏ ghi rõ việc nào chưa lưu · còn việc đang lưu mà đóng trang thì máy hỏi trước'],
   ['92','31/10/2026','🔖 Lọc theo đối tác ở tab Sản xuất: hàng chip “Đối tác: Tất cả · Đối tác chính · SQI · RI · Tự nhập” ngay đầu tab — bấm một đối tác thì mọi ô, danh sách công đoạn, theo thợ, theo tháng, việc đã xong chỉ còn lệnh của đối tác đó (kèm số đang chạy bên cạnh) · các ô Tiền, Thay đổi file và Mã trùng là của đối tác chính nên ẩn khi xem SQI / RI / Tự nhập · thẻ SQI, RI hiện nhãn nguồn thay cho dòng “đối tác (trống)”'],
@@ -738,6 +739,7 @@ function theSX(d,lop,gonNguoi){
   if(d.chuaBaoKhoan)x+='<div class="meta"><span class="nhanloi" style="background:var(--camnen);color:var(--cam)">💰 chưa báo tiền khoán</span></div>';
   if(ycCua(d.ma).length)x+='<div class="meta">'+nhanYC(d.ma)+'</div>'+dongYC(d.ma);
   if(d.cd==='Đóng kiện')x+='<div class="meta"><span>'+(d.soKien?'📦 <b>'+d.soKien+' kiện</b>':'<span class="nhanloi" style="background:var(--camnen);color:var(--cam)">📦 chưa ghi số kiện</span>')+'</span><span>'+(d.coAnhKien?'🖼 có ảnh kiện':'<span class="nhanloi" style="background:var(--camnen);color:var(--cam)">🖼 chưa có ảnh kiện</span>')+'</span><span class="link" data-chiphi="'+esc(d.ma)+'" style="cursor:pointer">ghi kiện / phụ kiện ›</span></div>'+dongPhuKien(d);
+  if(d.cd==='Hoàn thành'&&!d.soKien)x+='<div class="meta"><span class="nhanloi" style="background:var(--camnen);color:var(--cam)">📦 chưa ghi kiện</span><span class="link" data-chiphi="'+esc(d.ma)+'" style="cursor:pointer">ghi kiện ›</span></div>';
   if(d.cd==='Hoàn thành'&&(d.chanhXe||d.vanDon||d.nguoiGui))x+='<div class="meta"><span>🚚 '+esc([d.chanhXe,d.vanDon?'VĐ '+d.vanDon:'',d.nguoiGui?'gửi bởi '+d.nguoiGui:''].filter(function(t){return t;}).join(' · '))+'</span></div>';
   if(d.mauSP)x+='<div class="meta"><span>🧩 mẫu chung <b>'+esc(d.mauSP)+'</b></span></div>';
   if(d.dangMo&&!d.coAnhMau)x+='<div class="meta"><span class="nhanloi" style="background:var(--camnen);color:var(--cam)">⚠️ chưa có ảnh mẫu</span><span style="color:var(--mo)">gửi ảnh cho bot kèm mã đơn, bot tự chuyển thợ</span></div>';
@@ -762,10 +764,13 @@ function theSX(d,lop,gonNguoi){
       if(d.cd==='Đang sơn PU')x+='<button class="nn nho" data-doison="'+esc(d.ma)+'" data-ten="'+esc(d.nguoi||'')+'">🔁 Đổi thợ sơn</button>';
     }
     if(luiDuoc(d))x+='<button class="nn" data-lui="'+esc(d.ma)+'" title="Thợ bấm Xong nhầm">↩ Lùi về '+esc(luiDuoc(d))+'</button>';
+    if(d.cd!=='Đóng kiện')x+='<button class="nn" data-guixecoc="'+esc(d.ma)+'" title="Hàng đã rời xưởng mà chưa cập nhật các bước">🚚 Đã gửi xe</button>';
     x+='<button class="nn" data-tamngung="'+esc(d.ma)+'">⏸ Tạm ngưng</button><button class="nn" data-huy="'+esc(d.ma)+'" style="color:var(--do)">❌ Huỷ</button>';
     if(d.nguoi&&d.anh&&d.anh.length)x+='<button class="nn" data-guianh="'+esc(d.ma)+'" data-ten="'+esc(d.nguoi)+'">📤 Gửi ảnh cho '+esc(d.nguoi)+'</button>';
   }
   if(QUYEN==='quanly'&&!d.dangMo&&(d.cd==='Tạm ngưng'||d.cd==='Huỷ'))x+='<button class="nn chinh" data-molai="'+esc(d.ma)+'">↩️ Mở lại</button>';
+  if(QUYEN==='quanly'&&d.cd==='Tạm ngưng')x+='<button class="nn" data-guixecoc="'+esc(d.ma)+'">🚚 Đã gửi xe</button>';
+  if(QUYEN==='quanly'&&d.cd==='Hoàn thành'&&d.guiXeCoc)x+='<button class="nn" data-huyguixe="'+esc(d.ma)+'" title="Ghi gửi xe nhầm">↩ Huỷ gửi xe (về '+esc(d.guiXeCoc)+')</button>';
   x+='<button class="nn nho" data-anh="'+esc(d.ma)+'">📎 Ảnh'+(d.anh&&d.anh.length?' ('+d.anh.length+')':'')+'</button>';
   if(QUYEN==='quanly')x+='<button class="nn nho" data-guidon="'+esc(d.ma)+'">📨 Gửi thông tin</button>';
   if(QUYEN==='quanly'&&DL.doiSoat){var ct=(DL.doiSoat.ds.filter(function(x){return x.ma===d.ma;})[0]);x+='<button class="nn nho" data-chiphi="'+esc(d.ma)+'">💳 '+(ct&&ct.tong?gonC(ct.tong):'Chi phí')+(ct&&!ct.giaThanh?' ⚠️':'')+'</button>';}
@@ -1124,6 +1129,32 @@ function hopAnh(ma){var s=SX;var d=s.ds.filter(function(x){return x.ma===ma;})[0
       chay('webTaoMau',[KHOA,ten,'',ma],function(m){bao('Đã tạo mẫu '+m+' và gắn '+ma);setTimeout(function(){hopAnh(ma);},900);});return;}
     chay('webGanMau',[KHOA,ma,v],function(){bao(v?ma+' dùng mẫu chung '+v:'Đã bỏ mẫu chung');setTimeout(function(){hopAnh(ma);},900);});};
   q('[data-xoaanh]').forEach(function(b){b.onclick=function(){if(!confirm('Bỏ ảnh này khỏi đơn?'))return;chay('webXoaAnh',[KHOA,b.getAttribute('data-xoaanh')],function(){bao('Đã bỏ ảnh');});};});}
+
+// 18/11 (C-054): 🚚 Đã gửi xe khi đơn còn ở bước trước (chỉ anh Hải). Hằng số để TRONG hàm (trang GitHub vẽ sớm).
+function hopGuiXeCoc(m){
+  var THU_TU=['Chờ giao mộc','Đang làm mộc','Chờ chụp mộc','Đã chụp mộc, chờ đối tác','Đang sơn PU','Chờ chụp màu','Đã chụp màu, chờ đối tác','Đóng kiện'];
+  var d=(SX.ds||[]).filter(function(x){return x.ma===m;})[0]||{};
+  var i=THU_TU.indexOf(d.cd),bo=i>=0?THU_TU.slice(i+1):[];
+  var km=((DL.khoan&&DL.khoan.theoDon[m])||[]).filter(function(k){return k.trangThai==='Đang làm';});
+  var coKhoan=function(v){return ((DL.khoan&&DL.khoan.theoDon[m])||[]).some(function(k){return k.viec===v;});};
+  var chuaGiao=[];if((d.cd==='Chờ giao mộc'||(i>=0&&i<1))&&!coKhoan('mộc'))chuaGiao.push('mộc');if(i>=0&&i<4&&!coKhoan('sơn'))chuaGiao.push('sơn');
+  var nay=new Date(),iso=nay.getFullYear()+'-'+('0'+(nay.getMonth()+1)).slice(-2)+'-'+('0'+nay.getDate()).slice(-2);
+  var x='<div class="baoxong">Đơn đang ở <b>'+esc(d.cd||'')+'</b>'+(d.nguoi?' · '+esc(d.nguoi)+' giữ':'')+(bo.length?'. Bỏ qua '+bo.length+' bước: '+esc(bo.join(' → ')):'')+'.<br>Đơn sẽ thành <b>Hoàn thành</b>, vào Đối soát'+(d.nguoi?', '+esc(d.nguoi)+' nhận tin dừng việc':'')+'.</div>';
+  if(km.length){x+='<label>Tiền khoán đang mở — tick = tính xong cho thợ</label><div class="o">';
+    km.forEach(function(k){x+='<label class="lan" style="display:flex;gap:10px;align-items:center;justify-content:flex-start;font-weight:400;margin:0"><input type="checkbox" class="gxk" value="'+esc(k.ma)+'" checked style="width:auto"><span>'+esc(k.viec)+' · <b>'+esc(k.nguoi)+'</b> · '+(k.tien?tien(k.tien):'chưa định giá')+'</span></label>';});x+='</div>';}
+  if(chuaGiao.length)x+='<div class="phu">Bước '+esc(chuaGiao.join(', '))+' chưa giao ai nên chưa có khoán. Cần trả thợ thì thêm ở 💰 Khoán của đơn.</div>';
+  x+='<div class="doi"><div><label>Ngày gửi xe</label><input id="fgxngay" type="date" value="'+iso+'" max="'+iso+'"></div><div><label>Số kiện</label><input id="fgxkien" type="number" min="0" inputmode="numeric" value="'+(d.soKien||'')+'" placeholder="bỏ trống được"></div></div>';
+  x+='<div class="doi"><div><label>Chành xe / người nhận</label><input id="fgxchanh" placeholder="Chành Kim Sơn"></div><div><label>Mã vận đơn</label><input id="fgxvd"></div></div>';
+  x+='<div class="phu">Bấm nhầm thì mở thẻ đơn → ↩ Huỷ gửi xe (khi đơn chưa vào lần đối soát nào).</div>';
+  hop('🚚 Đã gửi xe — '+esc(d.maChung||m),x,'Đã gửi xe',function(){
+    var giu=[];Array.prototype.forEach.call(document.querySelectorAll('.gxk'),function(c){if(!c.checked)giu.push(c.value);});
+    var ngay=document.getElementById('fgxngay').value;if(ngay&&ngay>iso){bao('Ngày gửi xe không được sau hôm nay',1);return false;}
+    var kien=Number(document.getElementById('fgxkien').value)||0;if(kien<0){bao('Số kiện không âm',1);return false;}
+    chay('webGuiXeNhayCoc',[KHOA,m,{ngay:ngay,soKien:kien,chanhXe:document.getElementById('fgxchanh').value.trim(),vanDon:document.getElementById('fgxvd').value.trim(),giuKhoan:giu}],
+      function(k){bao('🚚 '+(k.maHien||m)+' đã gửi xe · Hoàn thành'+(k.khoanXong?' · '+k.khoanXong+' khoán tính xong':''));});});}
+function hopHuyGuiXe(m){var d=(SX.ds||[]).filter(function(x){return x.ma===m;})[0]||{};
+  hop('↩ Huỷ gửi xe — '+esc(d.maChung||m),'<div class="phu">Đơn về lại <b>'+esc(d.guiXeCoc||'')+'</b> với người giữ cũ; khoán vừa tính xong mở lại; ngày gửi, chành xe bỏ đi. Thợ cũ nhận tin.</div>','Huỷ gửi xe',function(){
+    chay('webHuyGuiXeNhayCoc',[KHOA,m],function(k){bao('↩ '+(k.maHien||m)+' về '+(k.den||'bước cũ'));});});}
 // ===== Kho ảnh: chọn ảnh đã up của đơn khác / mẫu chung để gắn sang đơn này =====
 var CHON_ANH={};
 var CHON_DS={};
@@ -2632,6 +2663,8 @@ function gan(){
     var canh=[];if(!d.soKien)canh.push('chưa ghi số kiện');if(!d.coAnhKien)canh.push('chưa có ảnh kiện');
     hop('🚚 Đã gửi xe — '+esc(d.maChung||m),(canh.length?'<div class="baoxong">⚠️ '+esc(canh.join(', '))+' — vẫn gửi được, anh Hải bổ sung sau.</div>':'')+'<div class="doi"><div><label>Chành xe / người nhận</label><input id="fchanh" placeholder="Chành Kim Sơn"></div><div><label>Mã vận đơn</label><input id="fvd"></div></div><div class="phu">Bấm xong đơn thành <b>Hoàn thành</b>, sang Đối soát. Không cần ai xác nhận thêm.</div>','Đã gửi xe',function(){
       chay('webGuiXe',[KHOA,m,document.getElementById('fchanh').value.trim(),document.getElementById('fvd').value.trim()],function(k){bao('🚚 '+(k.maHien||m)+' đã gửi xe · Hoàn thành');});});};});
+  q('[data-guixecoc]').forEach(function(b){b.onclick=function(){hopGuiXeCoc(b.getAttribute('data-guixecoc'));};});
+  q('[data-huyguixe]').forEach(function(b){b.onclick=function(){hopHuyGuiXe(b.getAttribute('data-huyguixe'));};});
   q('[data-guianh]').forEach(function(b){b.onclick=function(){var m=b.getAttribute('data-guianh'),t=b.getAttribute('data-ten');chay('webGuiAnhTho',[KHOA,m,''],function(n){bao('📤 Đã gửi '+n+' ảnh cho '+t);});};});
   q('[data-huy]').forEach(function(b){b.onclick=function(){var m=b.getAttribute('data-huy');var d=SX.ds.filter(function(x){return x.ma===m;})[0]||{};
     hop('❌ Huỷ đơn '+esc(d.maChung||m),'<div class="phu">Khách bỏ hẳn. '+(d.nguoi?'<b>'+esc(d.nguoi)+'</b> đang giữ sẽ được bot nhắn dừng làm. ':'')+'Khoán chưa xác nhận không tính. Không tính vào đối soát. Mở lại được nếu khách đổi ý.</div><label>Lý do (không bắt buộc)</label><input id="fhuy" placeholder="khách huỷ / đổi mẫu khác">','Huỷ đơn',function(){
